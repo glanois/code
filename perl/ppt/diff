@@ -9,3 +9,62 @@ $| = 1;
 die "ERROR: diff file1 file2\n" if !defined $ARGV[0] || !defined $ARGV[1];
 
 print diff($ARGV[0], $ARGV[1], { 'STYLE' => 'OldStyle' });
+
+__END__
+=pod
+
+=head1 NAME
+
+diff - Compares two files and displays the differences.
+
+=head1 SYNOPSIS
+
+   diff file1 file2
+ 
+        file1   The first file to compare.
+        file2   The second file to compare.
+
+=head1 DESCRIPTION
+
+C<diff> is a pure Perl implementation of the Unix "diff" program
+
+C<diff> produces differences in the POSIX default format 
+(see http://www.unix.com/man-page/POSIX/1posix/diff/),
+which is the same as the Gnu diff "normal format"
+(see http://www.gnu.org/software/diffutils/manual/diffutils.html#Normal).
+
+=head1 EXAMPLES
+
+=head1 AUTHOR
+
+Gerard Lanois <gerard@lanois.com>
+
+=head1 CREDITS
+
+Uses Text::Diff.
+
+=head1 SEE ALSO
+
+http://www.unix.com/man-page/POSIX/1posix/diff/
+
+http://www.gnu.org/software/diffutils/manual/diffutils.html#Normal
+
+=head1 LICENSE
+ 
+diff - Copyright (C) 2014  Gerard Lanois <gerard@lanois.com>
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+=cut
