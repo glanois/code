@@ -1,0 +1,85 @@
+#!/usr/bin/perl -w
+##############################################################################
+##    -*-perl-*-
+##
+## metamail - My slightly more secure metamail workalike.
+##
+## Courtesy of Gerard's Perl Page, 
+##       http://www.geocities.com/gerardlanois/perl/
+## REVISION HISTORY
+##
+##   version 1.0 2001/07/12 gerard@lanois.com - Initial release.
+##   version 1.1 2002/01/31 gerard@lanois.com - parts_DFS instead of recursion
+##############################################################################
+
+use strict;
+use MIME::Parser;
+use File::Path;
+use File::Copy;
+use File::Basename;
+
+sub yesno($) {
+    my $question = shift;
+
+    print $question, " (y/n) [n]: ";
+    my $key = <STDIN>;
+    print "\n";
+
+    return $key =~ /^y/i;
+}
+
+my $tempdir = "metamail-tmp";
+(-d $tempdir) or mkdir $tempdir,0755 or die "mkdir: $!";
+(-w $tempdir) or die "can't write to directory";
+
+my $parser = MIME::Parser->new;
+$parser->output_dir($tempdir);
+$parser->extract_uuencode(1);
+
+defined $ARGV[0] or die "usage: metamail filename\n";
+
+my $entity = $parser->parse_open($ARGV[0]) 
+    or die "couldn't parse file ";
+
+my $head = MIME::Head->from_file($ARGV[0]);
+my @hdrs = qw( Subject Reply-to From );
+foreach (@hdrs) {
+    my $header = $head->get($_);
+    if (defined $header) {
+        chomp $header;
+        print "    $_:", $header, "\n";
+    }
+}
+
+$entity->dump_skeleton(\*STDOUT);
+
+print "-"x40, "\n";
+
+foreach my $part ($entity->parts_DFS) {
+
+    # Process only those entities which have bodies.
+    next if (!$part->bodyhandle);
+
+    # If there are evil chars in the bodyhandle path, then MIME::Parser
+    # will choke and give a null file name, but the recommended
+    # file name will always have the file name, evil characters
+    # included.
+    my $filename = $part->head->recommended_filename;
+    if (!$filename) {
+        $filename = $part->bodyhandle->path;
+    }
+    fileparse_set_fstype("MSWin32") if ($^O =~/MSWin32/);
+    my ($file, $dir, $ext) = fileparse($filename, '\.[^.]*');
+    if (yesno("\n\n".$file.$ext." - want it?")) {
+        if ((!-f "./".$file.$ext) ||
+            (-f "./".$file.$ext && (yesno("File exists, overwrite?")))) {
+            move($part->bodyhandle->path, $file.$ext) ;
+            print "Saved ", $file.$ext, "\n";
+        }
+    }
+}
+
+$parser->filer->purge;
+rmtree $tempdir;
+
+

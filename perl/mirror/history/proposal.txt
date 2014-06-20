@@ -1,0 +1,214 @@
+
+WORKING TITLE
+
+    "Recursive Traversal Of An FTP Site with Net::FTP"
+
+AUTHOR INFO
+
+    Gerard Lanois - gerard@lanois.com - http://www.lanois.com/
+
+    858-799-5529 (days)
+    858-675-7005 (eves)
+
+    P.O. Box 507264
+    San Diego, CA 92150-7264
+
+
+PURPOSE
+
+    The available documentation only hints at the powerful combination of
+    Perl with Net::FTP.
+
+       Perl Cookbook, Recipe 18.2 "Being An FTP Client", p. 647
+
+       Perl In A Nutshell, "Net::FTP", p. 441
+       
+       The libnet FAQ, http://www.pobox.com/~gbarr/libnet/FAQ.html
+
+
+    This article will demonstrate how to recursively traverse an FTP site
+    using the Net::FTP module of the libnet distribution.
+
+    This article is the result of my own personal adventures in maintaining
+    a rapidly growing web site via FTP without the benefit of a telnet shell.
+    Furthermore, my ISPs web server munges links and images in my HTML pages; 
+    thus, using HTTP to mirror my site is not possible.
+
+
+APPLICATIONS
+
+    Mirroring a web site via FTP is but one simple application;  the real
+    power of this approach is that you can perform find()-like operations
+    to iterate over your FTP site tree.
+    
+    Examples:
+       FTP site mirroring - both directions
+       Web site mirroring - both directions
+       FTP scripting
+          - automation of repetitive tasks
+          - recursive traversal to grind over the site tree
+
+RESOURCES
+              
+    libnet, Net::FTP on CPAN and www.perl.com
+
+    Perl Cookbook, Recipe 18.2 "Being An FTP Client", p. 647
+
+    Perl In A Nutshell, "Net::FTP", p. 441
+
+    The libnet home page,  http://www.pobox.com/~gbarr/libnet/
+
+    RFC 959
+   
+
+THERE'S ALWAYS MORE THAN ONE WAY TO DO IT
+
+    Here are some other approaches to tackling this problem:
+
+        Lee McLoughlin's mirror - http://sunsite.org.uk/packages/mirror/
+
+        gFTP - http://gftp.seul.org/
+
+        WS_FTP - http://www.ipswitch.com/
+
+    ...but it's always more fun to do it *your* way.
+
+
+ARTICLE OUTLINE
+
+    1. Introduction
+
+       1.1 Motivation
+
+          1.1.1 Not All FTP Servers Are Created Equal
+
+          1.1.2 Not Everyone Has Shell Access
+
+       1.2 Tools
+
+          1.2.1 Command Line FTP Example
+
+          1.2.2 Net::FTP (part of the libnet distribution)
+
+    2. Code Walkthrough - Downloading
+
+       2.1 The Simple Case (download one file)
+
+       2.2 The Recursive Case (download a whole tree)
+
+    3. Code Walkthrough - Uploading
+        
+       3.1 The Simple Case (upload one file)
+
+       3.2 The Recursive Case (upload a whole tree)
+
+    5. Applications Of This Capability
+
+    4. Summary/Resources
+
+
+CODE EXAMPLE
+
+------------------------------CUT HERE------------------------------
+#!/usr/bin/perl -w
+# Mirrors remote FTP directory.
+#     usage: mirror [-d -D] host remotedir name password
+#        -d  Debug mode - don't actually transfer anything.
+#        -D  Turn on Net::FTP debug messages
+
+use Getopt::Std;
+use Net::FTP;
+
+getopts("dD");
+defined($opt_d) or $opt_d = 0;
+defined($opt_D) or $opt_D = 0;
+
+my $host     = shift;
+my $dir      = shift;
+my $name     = shift;
+my $password = shift;
+
+defined($host) and 
+defined($dir)  and 
+defined($name) and 
+defined($password) 
+    or die "usage: $0 [-d -D] host remotedir name password";
+
+$ftp = Net::FTP->new($host, Debug => $opt_D ? 1 : 0) 
+    or die "ERROR: Net::FTP->new($host) failed\n";
+
+$ftp->login($name, $password) 
+    or die "ERROR: login failed\n";
+
+get_files($dir, 0);
+
+$ftp->quit;
+
+exit(0);
+
+
+sub get_files {
+
+    my ($fromdir, $level) = @_;
+
+    # cwd will fail on d---------
+    # cwd will succeed on d--x--x--x
+    $ftp->cwd($fromdir) 
+        or die "ERROR: cwd($fromdir)failed\n";
+
+    # But dir will fail on d--x--x--x
+    my @files = $ftp->dir 
+        or warn "WARNING: dir on $fromdir failed; skipping it\n";
+
+    foreach my $i (@files) {
+
+        # RFC959 does not dictate the listing format, but the following
+        # assumptions are reasonable:
+        #   1. The columns in the listing are separated by whitespace.
+        #   2. The last column contains the file name.
+        #   3. The file names themselves do not contain spaces.
+        #      To handle that, use a column-oriented approach;
+        #      Use unpack() instead split() to split up the columns.
+        #      But that requires advanced knowledge of the column
+        #      format.
+        #   4. Directory items in the listing begin with 'd'.
+        my @items = split(/\s/, $i);
+        my $item = $items[$#items];
+
+        # If it's a directory, mirror the directory, cd into
+        # it, and recurse.
+        if ($i =~ /^d(.*)/) {
+            
+            # Skip . and .. if present.  
+            # Some FTP servers list these, some don't
+            next if $item =~ /\.\.?$/;
+
+            foreach (1..$level) {
+                print "   ";
+            }
+            print "DIRECTORY: ",$item,"\n";
+            
+            if (!$opt_d) {
+                mkdir($item, 0777);
+                chdir($item);
+            }
+            
+            my $prevdir = $ftp->pwd;
+            get_files($item, $level+1);
+            $ftp->cwd($prevdir);
+            if (!$opt_d) {
+                chdir('..');
+            }
+        } 
+        elsif ($i =~ /^-(.*)/) {
+            foreach (1..$level+1) {
+                print "   ";
+            }
+            print "FILE: ",$item,"\n";
+            if (!$opt_d) {
+                $ftp->get($item) 
+                    or die "ERROR: get() failed on $item\n";
+            }
+        }
+    }
+}

@@ -1,0 +1,15 @@
+Here is the first draft of my article, "Recursive Traversal Of An FTP 
+Site With Net::FTP".
+
+The article itself is called article.txt.
+
+The source code that accompanies the article is contained in the 
+.tar.gz file.  I can set up a web page so that the readers of
+the article can download the source.
+
+
+I have some free time to do as many revisions as you'd like, 
+especially over the coming weekend (the 15th thru the 17th).
+
+-Gerard
+gerard@lanois.com

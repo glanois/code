@@ -1,0 +1,94 @@
+#!/usr/bin/perl -w
+# Crawls remote FTP directory.
+#     usage: crawl_ftp [-D] host remotedir name password
+#        -D  Turn on Net::FTP debug messages
+
+use Getopt::Std;
+use Net::FTP;
+
+getopts("D");
+defined($opt_D) or $opt_D = 0;
+
+my $host     = shift;
+my $dir      = shift;
+my $name     = shift;
+my $password = shift;
+
+defined($host) and 
+defined($dir)  and 
+defined($name) and 
+defined($password) 
+    or die "usage: $0 [-D] host remotedir name password";
+
+$ftp = Net::FTP->new($host, Debug => $opt_D ? 1 : 0);
+
+$ftp->login($name, $password);
+
+
+$ftp->cwd($dir);  # Go to the starting point in the remote tree.
+
+print "DIRECTORY: ",$ftp->pwd,"\n";
+
+ftp_finddepth(\&process_item, 1);    # Crawl over the tree
+
+$ftp->quit;
+
+sub indent {
+    # A utility to indent our file tree listing.
+    my $num_levels = shift;
+    foreach (1..$num_levels) {
+        print "   ";
+    }
+}
+
+sub process_item {
+    my ($level, $isdir, $item, $parent) = @_;
+
+    foreach (1..$level) {
+        print "   ";
+    }
+    if ($isdir) {
+        print "DIRECTORY: ",$parent,"/",$item,"\n";
+    }
+    else {
+        print "FILE: ",$item,"\n";
+    }    
+}
+
+sub ftp_finddepth {
+
+    my ($callback, $level) = @_;
+
+    my @files = $ftp->dir;  # Make a listing of files and/or directories.
+
+    foreach my $i (@files) {
+
+        my @items = split(/\s/, $i);
+        my $item = $items[$#items];
+
+        my $parent = $ftp->pwd;
+
+        if ($i =~ /^d(.*)/) {     
+
+            # Skip . and .. if present in the listing.
+            # (Some FTP servers list these, some don't.)
+            next if $item =~ /\.\.?$/;
+
+            # It's a directory - call the callback.
+            &$callback($level, 1, $item, $parent);
+            
+            # Recursively crawl the subtree under this directory.
+            $ftp->cwd($item);
+            ftp_finddepth($callback, $level+1);
+
+            # Restore location in remote tree.
+            $ftp->cwd($parent);
+        } 
+        elsif ($i =~ /^-(.*)/) {
+
+            # It's a file - call the callback.
+            &$callback($level, 0, $item, $parent);
+        }
+    }
+}
+

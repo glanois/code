@@ -1,0 +1,510 @@
+        "Recursive Traversal Of An FTP Site with Net::FTP" 
+
+                     by Gerard Lanois
+
+
+
+INTRODUCTION
+------------
+
+    The available documentation only hints at the powerful combination
+    of Perl with Net::FTP.
+
+    This article is the result of my own personal adventures in
+    maintaining a rapidly growing web site via FTP without the 
+    benefit of a telnet shell on my server.  
+
+    If you have FTP access to your web server's file tree, mirroring 
+    with FTP rather than HTTP may be a better route for these reasons:
+
+        1. Your ISP's web server munges links and image paths in 
+           your HTML pages; thus, using HTTP to mirror the site 
+           is not possible.
+
+        2. There may be a cache between your HTTP client and your web
+           server, causing you to retrieve out-of-date pages.
+
+        3. Your web site contains dynamically generated content.
+
+        4. You have alot of other data besides HTML pages and images.
+           Scripts are a prime example.
+
+    This article will demonstrate how to recursively traverse an FTP
+    site using the Net::FTP module of the libnet distribution.
+
+    For the pedantically inclined, further background information
+    regarding the FTP protocol is available in RFC 959.
+
+
+MOTIVATION
+----------
+
+    You may find yourself in the unenviable position of trying to
+    maintain a remote file tree without shell access to the system
+    where your file tree resides.  Your file tree might contain a 
+    web site, an FTP site, or other data.
+
+    Many ISPs do not provide shell accounts, either for reasons of
+    security or because the host operating system has no concept of a
+    remote login shell (such as with MacOS and Windows machines).  If
+    you take the login shell out of the equation and wish to automate
+    the process of moving data between file trees on your local
+    machine and your server, a script-able client becomes a virtual
+    necessity.  Fortunately, the Net::FTP module provides the
+    necessary FTP protocol implementation so that you can write your
+    FTP scripts in your favorite scripting language, Perl.
+
+    Here are some "off-the-shelf" approaches to tackling this problem:
+
+        1. The classic command-line ftp client, ala' 4.2 BSD
+
+        2. One of the larger fully-featured mirroring tools, such
+           as Lee McLoughlin's mirror - http://sunsite.org.uk/packages/mirror/
+           (which is written in entirely in Perl), or Pavuk -
+           http://www.idata.sk/~ondrej/pavuk/.
+
+        3. A graphical FTP client, such as gFTP - http://gftp.seul.org/,
+           (a fairly new but rapidly maturing graphical X Window 
+           FTP client, based on the gtk+ library), or WS_FTP - 
+           http://www.ipswitch.com/, (a graphical MS Windows client).
+
+    Each of these tools has its own strengths and weaknesses, and a
+    corresponding place in your toolbox.  You could use one of these
+    approaches, what fun would that be?
+
+    As my web site has grown over the last couple of years, I have
+    found myself moving individual files and directories with either 
+    command-line ftp, or one of the graphical clients mentioned above.  
+
+    The cornerstone of the Perl philosophy is that "there's always
+    more than one way to do it".  I propose the following corollary:
+    "...but it's always more fun to do it *your* way".  This article
+    will show you how.  Here is an amusing anecdote illustrating why I
+    think it's more fun to write your own software:
+
+       A longtime friend of mine works for one of the big car
+       companies, designing electric cars.  One day he described to me
+       the basic architecture of an electric car, saying "well, you
+       have some batteries, a motor, a transmission, and some
+       software...".  I said, "HOLD IT RIGHT THERE!!! - I write
+       software for a living, and believe me, I don't want ANY
+       software in MY car, at least not any software that I haven't
+       personally written and tested!"
+
+    When I stumbled across Net::FTP by accident one day, I began
+    developing a small but effective mirroring program of my own.  I
+    had been avoiding the larger mirroring packages, since I find them
+    to be too (how do we say this delicately?) "feature-rich" for my
+    personal taste and purposes.
+    
+
+    If you have shell access, mirroring a file tree is trivial:
+
+        1. Package up your file tree on your development machine
+
+             % cd ~/filetree
+             % tar cvf - . | gzip > ../filetree.tar.gz
+
+        2. FTP your package over to the server
+
+             % cd ..
+             % ftp someisp.net
+             Conected to someisp.net
+             220 someisp.net FTPServer (Version wu-2.4.2) ready.
+             Name (someisp.net:gerard): gerard
+             331 Password required for gerard.
+             Password:
+             230 User gerard logged in.
+             Remote system type is UNIX.
+             ftp> cd /home/html/users/gerard
+             250 CWD command successful.
+             ftp> bin
+             200 Type set to I.
+             ftp> put filetree.tar.gz
+             put filetree.tar.gz
+             local: filetree.tar.gz remote: filetree.tar.gz
+             200 PORT command successful.
+             150 Opening BINARY mode data connection for filetree.tar.gz.
+             226 Transfer complete.
+             333546 bytes sent in 0.0175 secs (1.9e+04 Kbytes/sec)
+             ftp> bye
+             221-You have transferred 333546 bytes in 1 files.
+             221-Total traffic for this session was 333977 bytes in 1 transfers.
+             221-Thank you for using the FTP service on lanois.
+             221 Goodbye.
+             
+        3. Open a shell on the remote server
+
+             % telnet someisp.net
+             Trying 127.0.0.1...
+             Connected to someisp.net.
+             Escape character is '^]'.
+
+             Red Hat Linux release 6.0 (Hedwig)
+             Kernel 2.2.5-15 on an i686
+             login: gerard
+             Password: 
+             Last login: Mon Oct  4 21:53:57 on tty1
+             % 
+
+        4. Change directory to the remote file tree root (and delete
+           the old file tree, if necessary)
+
+             % cd /home/html/users/gerard
+             
+        5. Unpack your new file tree 
+
+             % gunzip < filetree.tar.gz | tar xvf -
+
+        6. Close the shell on the remote server
+
+             % exit
+             Connection closed by foreign host.
+             %
+
+    In the reverse direction:
+
+        1. Open a shell on the server
+
+             % telnet someisp.net
+
+        2. Package it up
+
+             % cd /home/html/users/gerard
+             % tar cvf - . | gzip > filetreemirror.tar.gz
+
+        3. Close the shell on the remote server
+
+             % exit
+             Connection closed by foreign host.
+             %
+
+        4. FTP the tree onto your local machine
+             % cd ~
+             % mkdir filetreemirror
+             % ftp someisp.net
+             ...
+             ftp> get filetreemirror.tar.gz
+             ...
+             ftp> bye
+             ...
+             %
+
+        5. Unpack it on your local machine
+           
+             % gunzip < filetreemirror.tar.gz | tar xvf -
+
+
+    For these two simple cases, an automated Perl client is probably
+    overkill.  Take the shell account out of the equation, and you'll 
+    find yourself engaging in some _very_ long conversations with your 
+    FTP server.
+
+
+Net::FTP
+--------
+
+    Although the man page for Net::FTP says that only a subset of RFC
+    959 is implemented, you will find that the implementation provided
+    by Net::FTP is sufficiently robust to serve a wide variety of
+    purposes.  The real power of Net::FTP stems from the power of the
+    Perl programming language itself.
+
+    The Net::FTP module is contained in the libnet distribution.
+    libnet is available from your favorite CPAN mirror, in the
+    directory modules/by-module/Net.  The filename will be of the form
+    libnet-X.YYYY.tar.gz.  As of the writing of this article the most
+    current version was 1.0607, dated 22-Aug-1998.
+    
+    There is also a virtually identical FTP capability in the Win32::Internet 
+    extension module, though Net::FTP works equally well in both the
+    Unix and Windows environments.
+
+
+DOWNLOADING A FILE - The Simple Case
+------------------------------------
+
+    Here is a short example illustrating how to download a single
+    file; I occasionally use this to download my web server access
+    log.  It is a simple example, but it demonstrates all the major
+    steps involved in scripting an FTP session with Net::FTP.
+
+
+    1. Use the Net::FTP package:
+
+        use Net::FTP;
+
+
+    2. Instantiate an FTP object:
+
+        $ftp = NET::FTP->new("someisp.net") 
+            or die "ERROR: Net::FTP->new failed\n";
+
+
+    3. Start an FTP session by logging in to the remote FTP server:
+
+        $ftp->login("anonymous", "g_lanois@yahoo.com") 
+            or die "ERROR: login failed\n";
+
+
+    4. Navigate to the directory holding the file you wish to download:
+
+        $ftp->cwd("/pub/outgoing/logs")
+            or die "ERROR: cwd failed\n";
+
+
+    5. Retrieve the file or files of interest:
+
+        $ftp->get("access_log")
+            or die "ERROR: get failed\n";
+
+
+    6. End the FTP session:
+
+        $ftp->quit;
+
+
+
+RECURSION
+---------
+
+    Let's have a quick review of Perl's recursion capability.
+    
+    Recursion barely gets a mention in the perlsub manual page, which
+    says, "Subroutines may be called recursively."
+
+    This means that a subroutine can call itself.
+
+    Here is a short example which shows how useful this can be:
+
+        sub factorial {
+            my $n = shift;
+            return ($n == 1) ? 1 : $n * factorial($n - 1);
+        }
+
+    The conceptual model of a file tree is an example of what
+    the branch of mathematics called graph theory refers to
+    as a "directed acyclic graph".  Recursion is the tool of
+    choice when describing algorithms which traverse the nodes
+    of a file tree.
+
+
+DOWNLOADING A FILE TREE - The Recursive Case 
+--------------------------------------------
+
+    On the local machine, if we wanted to crawl a file tree
+    recursively, we would use the finddepth() subroutine from the 
+    File::Find module.  (See recipes 9.7 and 9.8 in the Perl Cookbook).
+    However, there is no way to perform a finddepth() on a remote
+    file tree via the FTP protocol.  
+
+    Before we tackle the problem of mirroring a remote file tree, 
+    let's first develop the technology to crawl the tree.  Our approach
+    will combine Perl recursion with Net::FTP calls to perform a
+    find()-like recursive traversal of the remote tree.  Here is a
+    snippet of pseudo code:
+
+        sub crawl_tree {
+
+            Get a list of all the directories and files in the
+            current directory;
+  
+            for (each item in the list) {
+                if (item is a directory) {
+                    Save the current FTP remote working directory;
+                    Change into the directory called "item";
+                    crawl_tree();
+                    Restore the remote working directory to what it was previously;
+                }
+            }
+       }
+
+    crawl_ftp (given in Listing 1) is a Perl program which traverses a 
+    remote file tree, listing the directories and files it finds along
+    the way.
+
+    I discovered several interesting issues when developing this script.
+    Any script which uses Net::FTP needs to check for and handle these
+    conditions:
+
+        1. $ftp->cwd will fail on a directory which has permission set
+           to d---------
+
+        2. $ftp->cwd will succeed on d--x--x--x,  but 
+           $ftp->dir will fail on d--x--x--x
+
+        3. Some (but not all) FTP servers include '.' and '..' when 
+           you request a directory listing.  You want to make sure
+           you do not recurse on these directories.  If you recurse
+           on '..', you will crawl up the tree, not down.  If you
+           recurse on '.', you will cause a tear in the space-time
+           contiuum, and the computer the script is running on will
+           turn into a Klein bottle.
+
+        4. RFC959 does not dictate the format of a directory listing.
+           The following assumptions are reasonable if you don't know
+           in advance the listing format produced by an FTP server:
+
+              - The columns in the listing are separated by whitespace.
+
+              - The last column contains the file name.
+
+              - Directory items in the listing begin with 'd'.
+
+         5. Handling of file names that contain spaces requires a priori
+            knowledge of the listing format.  The unpack() function 
+            is perfect for parsing out the columns of the directory
+            listing.  The programs in this article do not handle
+            file names with spaces.
+
+
+-------------------- BEGIN LISTING 1 --------------------
+------((((((code excerpt from crawl_ftp goese here))))))------
+-------------------- END LISTING 1 --------------------
+
+
+    Running the above script will produce a nicely-indented tree-like
+    listing of the remote file tree you ran it on.
+
+    It would far more useful to make the crawl_tree() subroutine
+    general-purpose, using the same subroutine reference callback
+    mechanism employed by File:Find's find() and finddepth().
+    The perlref man page brushes lightly over the concept of subroutine
+    references, mentioning it in any detail only in the context of 
+    anonymous subroutines.  In our case, it will allow us to package
+    our tree crawling technology in a Perl module.
+
+    The next listing gives a modified version, with the crawl_tree()
+    renamed to be ftp_finddepth() and generalized through the use of 
+    a subroutine reference.
+
+
+-------------------- BEGIN LISTING 2 --------------------
+------((((((code excerpt from crawl_ftp2 goes here))))))------
+-------------------- END LISTING 2 --------------------
+
+
+    The first step is to create a module to hold the general purpose
+    ftp_finddepth() technology we just developed.  Then we can
+    proceed to write a downloading application that uses the 
+    module to traverse the remote file tree's directory structure
+    and transfer any files it finds along the way.
+
+
+-------------------- BEGIN LISTING 3 --------------------
+------((((((code excerpt from FTPFind.pm goes here))))))------
+-------------------- END LISTING 3 --------------------
+
+    Writing an application to download a file tree is just a simple
+    matter of writing a process_item() callback which mirrors the
+    directory tree and retrieves files, depending on what ftp_finddepth()
+    passed it.
+
+
+-------------------- BEGIN LISTING 4 --------------------
+------((((((code excerpt from mirror_get goes here))))))------
+-------------------- END LISTING 4 --------------------
+
+    If process_item() is called with a directory (as indicated by
+    the $isdir parameter), you want to create a directory in 
+    the local filesystem.  If process_item() is called with a
+    file, issue an FTP get() request to download the file.
+    
+
+UPLOADING A FILE - The Simple Case
+----------------------------------
+
+    Uploading a file is exactly the same as downloading, except
+    you will call the Net::FTP get() subroutine, instead of put().
+
+
+UPLOADING A FILE TREE - The Recursive Case 
+------------------------------------------
+
+    Initially, one would think that using File::Find's find() or
+    finddepth() would be the way to iterate over the local file tree.
+
+    There is one small problem with that approach: find() and
+    finddepth() report the _full_ path name of the local directories
+    they find.  We only want _relative_ local path names
+    of each directory, so that we can duplicate the relative file
+    subtree on the remote system.
+
+    We can get by without a remote mkpath()-like capability on the
+    remote system, since we can mirror the directories we see on the
+    local side to the remote site on the fly as we descend the local
+    tree.  We will keep track of our relative location in the local
+    file tree by pushing each directory we descend into onto the back
+    of a Perl list.
+
+    So, leaving File::Find's find() and finddepth() behind, we'll
+    develop our own finddepth().  Longtime users of Perl might
+    remember the old example program called "down" that was
+    distributed with Perl4.  Our version finddepth(), called
+    finddepth_gl(), given in the listing that follows, performs a
+    similar function, only more portably since it does not involve
+    invoking a Unix command via the Perl system function.
+
+
+-------------------- BEGIN LISTING 5 --------------------
+------((((((code excerpt from mirror_put goes here))))))------
+-------------------- END LISTING 5 --------------------
+
+    Beware that Net::FTP's mkdir() will return failure if the directory
+    already exists.
+
+
+APPLICATIONS
+------------
+
+    The ability to automate FTP operations relieves a great deal
+    of tedium from having to manually push and pull files to and
+    from your remote file tree.  This is particularly true for 
+    periodic and repetitive tasks, such as log file retrieval,
+    or unattended updating of an otherwise static web site.
+
+    The mirroring applications given above only scratch the surface of
+    what is possible, given a general-purpose recursive FTP site
+    traversal mechanism.  This mechanism gives you the ability to
+    grind over your entire remote file tree.  In the case of a web
+    site, this is particularly helpful for rooting out missing or
+    orphaned files.  Another application is to automatically check and
+    fix the permissions on all the files in your remote tree.  Do you
+    remember the last time you had to do _that_ by hand?
+
+
+__END__
+
+
+Gerard Lanois is a Un*x junkie who has been carrying the monkey on
+his back since 1986.  He invites you to swap stories and folklore 
+with him at gerard@lanois.com.
+
+
+
+RESOURCES
+---------
+
+      + The libnet distribution
+
+        http://www.perl.com/CPAN/modules/by-module/Net
+
+
+      + The libnet FAQ, available via the web at the libnet home page,
+
+        http://www.pobox.com/~gbarr/libnet/
+
+
+      + Perl Cookbook, Recipe 18.2 "Being An FTP Client", p. 647
+
+
+      + Perl In A Nutshell, "Net::FTP", p. 441
+       
+
+      + Perl In A Nutshell, "Win32::Internet FTP Functions", p. 571
+       
+
+      + RFC 959
+
+        http://www.yahoo.com/Computers_and_Internet/Standards/RFCs/
+

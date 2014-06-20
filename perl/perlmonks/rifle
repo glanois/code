@@ -1,0 +1,657 @@
+#!/usr/bin/perl -w
+##############################################################################
+##    -*-perl-*-
+##
+## rifle - POP3 mailbox filter
+##
+## REVISION HISTORY
+##
+## 1.0 2002/01/10 Initial release.
+## 1.1 2002/01/14 Added logfile and trashcan.
+## 1.2 2002/01/28 Added summary statistics.
+## 1.3 2002/02/04 Added Vipul's Razor.
+## 1.4 2002/02/18 Need to kill trailing \s when printing headers.
+##############################################################################
+
+package MessageTemplateMethod;
+
+# Iterates over each message in a POP3 mailbox. See the Template
+# Method pattern in the Design Patterns book.
+
+use strict;
+
+use Net::POP3;
+use Mail::Header;
+
+sub new
+{
+    my $class = shift;
+    my %args = @_;
+
+    my $obj = bless {
+        _hostname => $args{hostname},
+        _account  => $args{account},
+        _password => $args{password},
+    }, $class;
+
+    return $obj;
+}
+
+sub iterate
+{
+    my $self = shift;
+
+    my $pop3 = Net::POP3->new($self->{_hostname}) or 
+        die "ERROR: Net::POP3->new(", $self->{_hostname}, ") failed\n";
+
+    my $msgs = $pop3->login($self->{_account}, $self->{_password});
+    die "ERROR: Net::POP3->login() failed\n" if (!defined $msgs);
+
+    $msgs += 0;  # Get rid of funky 0E0.
+    foreach my $i (1..$msgs) {
+        my $hdrs = $pop3->top($i);
+        my $mh = Mail::Header->new($hdrs);
+        $self->_message($pop3, $i, $mh);
+    }
+    $pop3->quit;
+}
+
+# PRIVATE
+
+sub _message
+{
+    my $self = shift;
+    my $pop3 = shift;
+    my $num  = shift;
+    my $mh   = shift;
+
+    # Override this so you can do something with this message.
+}
+
+
+package MailFilter;
+
+use strict;
+use IO::File;
+use Digest::MD5;
+use Razor::Client;
+
+use vars qw(@ISA);
+
+@ISA = qw( MessageTemplateMethod );
+
+sub new
+{
+    my $self   = shift;
+    my %arg = @_;
+
+    my $objref = $self->SUPER::new(@_);
+
+    $objref->{_filter}   = $arg{filter};
+    $objref->{_logfile}  = $arg{logfile};
+    $objref->{_trashcan} = $arg{trashcan};
+    $objref->{_prompt}   = $arg{prompt};
+    $objref->{_bins}     = { kept => {}, tossed => {} };
+    $objref->{_razor}    = new Razor::Client("");
+
+    bless $objref, $self;
+
+    return $objref;
+}
+
+sub summarize
+{
+    my $self = shift;
+
+    $self->_print("\n");
+    $self->_timestamp;
+
+    my $kept = 0;
+    if (keys %{$self->{_bins}->{kept}}) {
+        $self->_print("\n");
+        $self->_print("    Summary of Kept Messages:\n");
+        foreach my $i (keys %{$self->{_bins}->{kept}}) {
+            $self->_print(' ' x 8, "$self->{_bins}->{kept}->{$i} : $i\n");
+            $kept += $self->{_bins}->{kept}->{$i};
+        }
+    }
+    
+    my $tossed = 0;
+    if (keys %{$self->{_bins}->{tossed}}) {
+        $self->_print("\n");
+        $self->_print("    Summary of Tossed Messages:\n");
+        foreach my $i (keys %{$self->{_bins}->{tossed}}) {
+            $self->_print(' ' x 8, "$self->{_bins}->{tossed}->{$i}: $i\n");
+            $tossed += $self->{_bins}->{tossed}->{$i};
+        }
+    }
+
+    my $total = $kept + $tossed;
+    $self->_print("\n");
+    if ($total) {
+        $self->_print(
+                      "    $total message", 
+                      ($total > 1) ? 's ' : ' ',
+                      "processed.  ");
+    }
+
+    if ($tossed && $kept) {
+        $self->_print("    Kept $kept and tossed $tossed.\n");
+    }
+    elsif ($kept) {
+        $self->_print("    Kept $kept.\n");
+    }
+    elsif ($tossed) {
+        $self->_print("    Tossed $tossed.\n");
+    }
+    else {
+        $self->_print("    No messages.\n");
+    }
+}
+
+
+# PRIVATE
+
+sub _timestamp
+{
+    my $self = shift;
+    my $now = localtime;
+    $self->_print("-" x 20, " $now ", "-" x 20, "\n");
+}
+
+sub _message
+{
+    my $self = shift;
+    my $pop3 = shift;
+    my $num  = shift;
+    my $mh   = shift;
+
+    $self->_print("\n");
+    $self->_timestamp;
+    my @tags = $mh->tags();
+    foreach my $t (qw(Subject From To Cc Date Message-ID)) {
+        if (grep(/(?i)^$t$/, @tags)) {
+            my $text = $mh->get($t);
+            $text =~ s/\s+$//; # Better than chomp.
+            $self->_print(sprintf "%10s: %s\n", $t, $text);
+        }
+    }
+
+    my $filtered = 0;
+    FILTERS: foreach my $f (@{$self->{_filter}}) {
+
+        if (!($f->{op} cmp "razor")) {
+            # Let Vipul's Razor look at it.
+            my $msg = $pop3->get($num);
+            my $response = $self->{_razor}->check(spam => $msg);
+            if ($response->[0]) {
+                $self->_print("    FILTER: Vipul's Razor said it was SPAM/UCE\n");
+                $self->_toss($pop3, $num, $mh, $f);
+                $filtered = 1;
+                last FILTERS;
+            }
+        }
+        else {
+            # A 'keep' or 'toss' filter.  Apply regexps to headers.
+            foreach my $h (@{$f->{hdr}}) {
+                if (grep(/^$h$/, @tags)) {
+                    my $text = $mh->get($h);
+                    $text =~ s/\s+$//;  # Better than chomp.
+                    if ($text =~ /$f->{regex}/) {
+                        $self->_print("    FILTER: ");
+                        if (!defined $f->{desc}) {
+                            $self->_print($f->{regex}, " matched $text in $h.\n");
+                        }
+                        else {
+                            $self->_print($f->{desc}, "\n");
+                        }
+                        if (!($f->{op} cmp "keep")) {
+                            $self->_keep($pop3, $num, $mh, $f);
+                        }                                   
+                        else {                              
+                            $self->_toss($pop3, $num, $mh, $f);
+                        }
+                        $filtered = 1;
+                        last FILTERS;
+                    }
+                }
+            }
+        }
+    }
+
+    if (!$filtered) {
+        $self->_print("    FILTER: It was not explicitly kept or tossed.\n");
+        $self->_default($pop3, $num, $mh);
+    }
+}
+
+sub _count
+{
+    my $self  = shift;
+    my $desc  = shift;
+    my $key   = shift;
+
+    if ($desc) {
+        if (!defined $self->{_bins}->{$key}->{$desc}) {
+            $self->{_bins}->{$key}->{$desc} = 0;
+        }
+        $self->{_bins}->{$key}->{$desc}++;
+    }
+    else {
+        if (!defined $self->{_bins}->{$key}->{'No description.'}) {
+            $self->{_bins}->{$key}->{'No description.'} = 0;
+        }
+        $self->{_bins}->{$key}->{'No description.'}++;
+    }
+}
+
+sub _keep
+{
+    my $self  = shift;
+    my $pop3  = shift;
+    my $num   = shift;
+    my $mh    = shift;
+    my $f     = shift;
+
+    $self->_print("    RESULT: Left message on server.\n");
+    $self->_count($f->{desc}, 'kept');
+}
+
+sub _toss
+{
+    my $self  = shift;
+    my $pop3  = shift;
+    my $num   = shift;
+    my $mh    = shift;
+    my $f     = shift;
+
+    $self->_delete($pop3, $num, $mh);
+    $self->_count($f->{desc}, 'tossed');
+}
+
+sub _default
+{
+    my $self  = shift;
+    my $pop3  = shift;
+    my $num   = shift;
+    my $mh    = shift;
+
+    $self->_delete($pop3, $num, $mh);
+    $self->_count('It was not explicitly kept or tossed.', 'tossed');
+}
+
+sub _print
+{
+    my $self = shift;
+    print @_;
+
+    if (defined $self->{_logfile}) {
+        my $fh = IO::File->new;
+        if ($fh->open(">> ".$self->{_logfile})) {
+            print $fh @_;
+            $fh->close;
+        }
+    }
+}
+
+sub _yesno {
+    my $question = shift;
+
+    print $question, " (y/n) [n]: ";
+    my $answer = <>;
+    chomp $answer;
+
+    if ($answer =~ /(?i)^y/i) {
+        return 1;
+    }
+    else {
+        return 0;
+    }
+}
+
+sub _delete
+{
+    my $self  = shift;
+    my $pop3  = shift;
+    my $num   = shift;
+    my $mh    = shift;
+    if (!$self->{_prompt} || ($self->{_prompt} && _yesno("Delete it?"))) {
+
+        if (defined $self->{_trashcan}) {
+
+            # Download message and save it to the trashcan.
+
+            my $msgid = $mh->get('Message-ID');
+            if (!$msgid) {
+                # Missing the Message-ID, so make one up.
+                my $headers = $pop3->top($num);
+                $msgid = join("", Digest::MD5::md5_hex(join '', @{$headers}),
+                              '@NO-ID-FOUND');
+            }
+        
+            # Convert all non-alphanumeric to a nice char.
+            $msgid =~ s/([^\w\/\_\-])/\_/g;
+            
+            my $fh = IO::File->new;
+            my $filename = $self->{_trashcan};
+            $filename .= ($^O eq "MacOS" ? ':' : '/');
+            $filename .= $msgid.'.txt';
+            if (!$fh->open("> $filename")) {
+                die "Could not open $filename for writing.\n";
+            }
+            else {
+                my $message = $pop3->get($num, $fh);
+                $self->_print("     TRASH: Saved message as $filename.\n");
+                $fh->close;
+            }
+        }
+
+        # Now really delete it off the server.
+        $pop3->delete($num);
+        $self->_print("    RESULT: Deleted message on server.\n");
+    }
+    else {
+        $self->_print("    RESULT: Left message on server.\n");
+    }
+}
+
+
+package main;
+
+use strict;
+
+use Getopt::Std;
+use Term::ReadKey;
+use Net::Netrc;
+use IO::File;
+
+my %opt;
+
+my $error = !getopts('h:u:f:l:t:xw', \%opt);
+if ($error) {
+    print << "EOU";
+
+Usage: rifle [switches]
+
+   where
+        -h host   Hostname to connect to
+        -u user   User account name 
+        -f file   Use alternative .riflerc
+        -l file   Output log file
+        -t dir    Write tossed messages to trashcan directory
+        -x        Do not prompt before tossing
+        -w        Print out warranty information
+
+EOU
+}
+elsif ($opt{'w'}) {
+print << "EOW";
+------------------------------------------------------------------------------
+BECAUSE THE PROGRAM IS LICENSED FREE OF CHARGE, THERE IS NO WARRANTY
+FOR THE PROGRAM, TO THE EXTENT PERMITTED BY APPLICABLE LAW.  EXCEPT WHEN
+OTHERWISE STATED IN WRITING THE COPYRIGHT HOLDERS AND/OR OTHER PARTIES
+PROVIDE THE PROGRAM "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESSED
+OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.  THE ENTIRE RISK AS
+TO THE QUALITY AND PERFORMANCE OF THE PROGRAM IS WITH YOU.  SHOULD THE
+PROGRAM PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING,
+REPAIR OR CORRECTION.
+
+IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN WRITING
+WILL ANY COPYRIGHT HOLDER, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR
+REDISTRIBUTE THE PROGRAM AS PERMITTED ABOVE, BE LIABLE TO YOU FOR DAMAGES,
+INCLUDING ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING
+OUT OF THE USE OR INABILITY TO USE THE PROGRAM (INCLUDING BUT NOT LIMITED
+TO LOSS OF DATA OR DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY
+YOU OR THIRD PARTIES OR A FAILURE OF THE PROGRAM TO OPERATE WITH ANY OTHER
+PROGRAMS), EVEN IF SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGES.
+EOW
+}
+else {
+
+    my $hostname;
+    if ($opt{'h'}) {
+        $hostname = $opt{'h'};
+    }
+    else {
+        print "   Host: ";
+        $hostname = ReadLine(0);
+        chomp $hostname;
+    }
+
+    my $account;
+    if ($opt{'u'}) {
+        $account = $opt{'u'};
+    }
+    else {
+        print "Account: ";
+        $account = ReadLine(0);
+        chomp $account;
+    }
+
+    my $password;
+    my $netrc = Net::Netrc->lookup($hostname, $account);
+    if (defined $netrc) {
+        $password = $netrc->password;
+    }
+    else {
+        print "Password: ";
+        ReadMode('noecho');
+        $password = ReadLine(0);
+        ReadMode('restore');
+        chomp $password;
+        print "\n\n";
+    }
+
+    # Locate the filter specification.
+    my $file;
+    if ($opt{'f'}) {
+        $file = $opt{'f'};
+    }
+    else {
+        if ($^O eq "MacOS") {
+            my $home = $ENV{HOME} || `pwd`;
+            chomp($home);
+            $file = ($home =~ /:$/ ? $home . "riflerc" : $home . ":riflerc");
+        } 
+        else {
+            # Some OS's don't have `getpwuid', so we default to $ENV{HOME}
+            my $home = eval { (getpwuid($>))[7] } || $ENV{HOME};
+            $file = $home . "/.riflerc";
+        }
+    }
+
+    my $fh = new IO::File;
+    if (!$fh->open("< $file")) {
+        die "Could not open $file\n";
+    }
+    elsif (defined $opt{'t'} && !-d $opt{'t'}) {
+        die "Directory ", $opt{'t'}, " doesn't exist.\n";
+    }
+    else {
+
+        # Load the filter specification.
+        my $prev = $/;
+        $/ = undef;  # slurp
+        my $filter_spec = <$fh>;
+        $/ = $prev;  # unslurp
+        $fh->close;
+
+        my $filter = eval $filter_spec;
+        die $@ if $@;
+        if (defined $filter) {
+            my $mf = MailFilter->new(
+                                     hostname => $hostname,
+                                     account  => $account,
+                                     password => $password,
+                                     filter   => $filter,
+                                     logfile  => $opt{'l'},
+                                     trashcan => $opt{'t'},
+                                     prompt   => !$opt{'x'});
+            $mf->iterate;
+            $mf->summarize;
+        }
+    }
+}
+
+__END__
+=pod
+
+=head1 NAME
+
+rifle - Filters email messages in your POP3 mailbox.
+
+=head1 SYNOPSIS
+
+   rifle [-h host] [-u user] [-f file] [-l file] [-t dir] [-x] [-w]
+ 
+        -h host   Hostname to connect to
+        -u user   User account name 
+        -f file   Use alternative filter specification file
+        -l file   Output log file
+        -t dir    Write tossed messages to trashcan directory
+        -x        Do not prompt before deleting
+        -w        Print out warranty information
+
+=head1 DESCRIPTION
+
+C<rifle> is a POP3 mailbox filtering program, which is particularly
+adept at filtering SPAM/UCE messages.
+
+=head1 Filter Specification
+
+The C<.riflerc> file in your home directory contains
+the filter specification.  You can specify an alternate 
+filter specification file with the C<-f> option.
+
+The filter specification is a prioritized list of filtering
+criteria (highest appearing first).  Each entry consists of
+an operation ('op'), and an optional description ('desc').
+
+For B<keep> and B<toss> operations, you specify a set of
+header tags, and a Perl regular expression ('regex') to match.
+If the regular expression matches one or more of the message 
+headers, the message will be kept or tossed, depending on
+what you specified of the operation.
+
+For the B<razor> operation, a C<rifle> performs a lookup
+of the message signature using Vipul's Razor SPAM/UCE
+detection system.
+
+The optional description will be reported during logging
+and will be used for tabulating and reporting statistics.
+
+Messages which are not explicitly kept or tossed by the filter 
+specification are deleted.
+
+At a minimum, you will want to keep all messages which are
+explicitly addressed or Cc-ed to you:
+
+ [
+     { hdr   => [ 'To', 'Cc' ],
+       regex => '(?i)gerard\@lanois\.com', 
+       op    => 'keep',
+       desc  => 'Mail addressed directly to me' },
+ ]
+
+C<rifle> will look for a password in your C<.netrc> for 
+the hostname and account you specify.  Otherwise, it
+will prompt you for the host, account name, and password.
+
+You can apply Vipul's Razor at any point in the filter
+specification; however, you will find it most useful to
+put as either first filter, or immediately prior to 
+your personal address filter.
+
+=head1 EXAMPLES
+
+Example C<.riflerc>:
+
+ [
+     { hdr   => [ 'From' ],
+       regex => '(?i)\@cgw\.com', 
+       op    => 'toss' },
+     { hdr   => [ 'To' ],
+       regex => '(?i)Undisclosed\.Recipients', 
+       op    => 'toss' },
+     { hdr   => [ 'Subject', 'To', 'Cc' ],
+       regex => '(?i)SDBC|sdcbc', 
+       op    => 'keep' },
+     { hdr   => [ 'Subject' ],
+       regex => 'M2A|M2PA|M2SD', 
+       op    => 'keep' },
+     { hdr   => [ 'To', 'Cc' ],
+       regex => '(?i)ubh\@yahoogroups\.com',
+       op    => 'keep' },
+     { op    => 'razor',
+       desc  => 'Vipul\'s Razor' },
+     { hdr   => [ 'To', 'Cc' ],
+       regex => '(?i)gerard\@lanois\.com', 
+       op    => 'keep' },
+ ]
+
+=head1 INSTALLATION
+
+You will need the following modules, if you don't already have them:
+
+IO::File
+
+Net::POP3
+
+Mail::Header
+
+Net::Netrc
+
+Getopt::Std
+
+Term::ReadKey
+
+Digest::MD5
+
+Razor::Client - http://razor.sourceforge.net/
+
+=head1 AUTHOR
+
+Gerard Lanois <gerard@lanois.com>
+
+Courtesy of Gerard's Perl Page, http://www.geocities.com/gerardlanois/perl/
+
+=head1 CREDITS
+
+Platform-independent C<.rc> file location code borrowed from Net::Netrc.
+
+=head1 SEE ALSO
+
+http://razor.sourceforge.net/
+
+Mail::Audit
+
+http://www.threeminutehero.com/projects/pop3/
+
+http://mailfilter.sourceforge.net/
+
+http://www.thrysoee.dk/checkmail/
+
+http://www.algonet.se/~staham/linux/programs.html
+
+=head1 LICENSE
+ 
+rifle - Copyright (C) 2002  Gerard Lanois <gerard@lanois.com>
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+=cut
+
