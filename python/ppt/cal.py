@@ -15,17 +15,21 @@ Description:
 """
 
 import argparse
+import sys
 import calendar
 import datetime
 
+
 def main(options):
-    cal = calendar.TextCalendar()
-    cal.setfirstweekday(calendar.SUNDAY)
+    
+    cal = calendar.TextCalendar(calendar.SUNDAY)
     if not options.year:
         now = datetime.datetime.now()
         cal.prmonth(now.year, now.month)
     else:
         cal.pryear(int(options.year[0]))
+    return 0
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -35,4 +39,5 @@ if __name__ == '__main__':
         help='Display a calendar for the specified year.',
         nargs='*')
     options = parser.parse_args()
-    main(options)
+    sys.exit(main(options))
+
