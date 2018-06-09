@@ -22,9 +22,8 @@ def main(options):
     cal = calendar.TextCalendar()
     cal.setfirstweekday(calendar.SUNDAY)
     if not options.year:
-        month = datetime.datetime.now().month
-        year  = datetime.datetime.now().year
-        cal.prmonth(year, month)
+        now = datetime.datetime.now()
+        cal.prmonth(now.year, now.month)
     else:
         cal.pryear(int(options.year[0]))
 
