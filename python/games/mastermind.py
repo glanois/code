@@ -28,7 +28,11 @@ for i in range(4):
 guesses = 0
 won = False
 while guesses < 10 and not won:
-    guess = [x.upper() for x in list(input('Enter your guess:'))][0:4]
+    # A valid guess is 4 characters.
+    # Upper/lower case doesn't matter.
+    guess = ''
+    while len(guess) < 4:
+        guess = [x.upper() for x in list(input('Enter your guess:'))][0:4]
     guesses += 1
 
     # Score their guess.
