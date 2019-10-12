@@ -37,7 +37,7 @@ class POSIXDiffer(Differ):
             elif tag == 'equal':
                 g = []
             else:
-                raise ValueError, 'unknown tag %r' % (tag,)
+                raise(ValueError, 'unknown tag %r' % (tag,))
 
             for line in g:
                 yield line
