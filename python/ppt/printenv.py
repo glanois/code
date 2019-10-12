@@ -30,13 +30,13 @@ def main(options):
     # Return 0 on success, 1 if an error occurs.
     result = 0
     if not options.name:
-        print '\n'.join([ '%s=%s' % (k, v) for (k, v) in os.environ.items() ])
+        print('\n'.join([ '%s=%s' % (k, v) for (k, v) in os.environ.items() ]))
     else:
         name = options.name[0]
         if name not in os.environ:
             result = 1
         else:
-            print '%s=%s' % (name, os.environ[name])
+            print('%s=%s' % (name, os.environ[name]))
     return result
 
 
