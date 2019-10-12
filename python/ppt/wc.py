@@ -39,13 +39,13 @@ def wordcounttext(options, text, filepath):
     count['words'] = len(re.findall(r"[\w']+|[.,!?;]", text))
  
     if options.bytes or options.chars:
-        print '%7d %s' % (count['chars'], filepath)
+        print('%7d %s' % (count['chars'], filepath))
     elif options.lines:
-        print '%7d %s' % (count['lines'], filepath)
+        print('%7d %s' % (count['lines'], filepath))
     elif options.words:
-        print '%7d %s' % (count['words'], filepath)
+        print('%7d %s' % (count['words'], filepath))
     else:
-        print '%7d %7d %7d %s' % (count['lines'], count['words'], count['chars'], filepath)
+        print('%7d %7d %7d %s' % (count['lines'], count['words'], count['chars'], filepath))
     return count
  
  
@@ -59,7 +59,7 @@ def wordcountfile(options, filepath):
         text = fin.read()
         fin.close()
     except IOError:
-        print 'Error reading file %s.' % (filepath)
+        print('Error reading file %s.' % (filepath))
         raise
     else:
         count = wordcounttext(options, text, filepath)
@@ -74,17 +74,17 @@ def wordcountfilenames(options):
  
     for path in options.filenames:
         count = wordcountfile(options, path)
-        total = {k: total[k] + v for (k, v) in count.items()}
+        total = {k: total[k] + v for (k, v) in list(count.items())}
  
     if len(options.filenames) > 1:
         if options.bytes or options.chars:
-            print '%7d %s' % (total['chars'], 'total')
+            print('%7d %s' % (total['chars'], 'total'))
         elif options.lines:
-            print '%7d %s' % (total['lines'], 'total')
+            print('%7d %s' % (total['lines'], 'total'))
         elif options.words:
-            print '%7d %s' % (total['words'], 'total')
+            print('%7d %s' % (total['words'], 'total'))
         else:
-            print '%7d %7d %7d %s' % (total['lines'], total['words'], total['chars'], 'total')
+            print('%7d %7d %7d %s' % (total['lines'], total['words'], total['chars'], 'total'))
  
  
 def main(options):

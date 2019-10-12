@@ -28,7 +28,11 @@ for i in range(4):
 guesses = 0
 won = False
 while guesses < 10 and not won:
-    guess = [x.upper() for x in list(raw_input('Enter your guess:'))][0:4]
+    # A valid guess is 4 characters.
+    # Upper/lower case doesn't matter.
+    guess = ''
+    while len(guess) < 4:
+        guess = [x.upper() for x in list(input('Enter your guess:'))][0:4]
     guesses += 1
 
     # Score their guess.
@@ -50,13 +54,13 @@ while guesses < 10 and not won:
             white += 1
 
     # Give them their hints.
-    print '[', guesses, ']', ''.join(guess), red, white
+    print('[', guesses, ']', ''.join(guess), red, white)
 
     # Detect victory, otherwise give them another guess.
     if red == 4:
-        print "You win!"
+        print('You win!')
         won = True
 
 # Detect defeat, and tell them how they did.
 if guesses == 10 and not won:
-    print 'You lose.  The code was ', ''.join(code)
+    print('You lose.  The code was ', ''.join(code))
