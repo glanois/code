@@ -62,21 +62,19 @@ def pdiff(a, b):
     return POSIXDiffer().compare(a, b)
 
 
-def compare_binary_files(f1, f2):
+def compare_binary_files(file1, file2):
     # Compare sizes first.  Don't bother comparing unless sizes are the same.
-    if os.path.getsize(f1) != os.path.getsize(f2):
+    if os.path.getsize(file1) != os.path.getsize(file2):
         return False
 
-    # Taken from https://github.com/python/cpython/blob/3.6/Lib/filecmp.py
-    # _do_cmp()
-    bufsize = 8*1024
-    with open(f1, 'rb') as fp1, open(f2, 'rb') as fp2:
+    buffer_size = 8*1024
+    with open(file1, 'rb') as f1, open(file2, 'rb') as f2:
         while True:
-            b1 = fp1.read(bufsize)
-            b2 = fp2.read(bufsize)
-            if b1 != b2:
+            buffer1 = f1.read(buffer_size)
+            buffer2 = f2.read(buffer_size)
+            if buffer1 != buffer2:
                 return False
-            if not b1:
+            if not buffer1:
                 return True
 
 def compare_text_files(file1, file2):
