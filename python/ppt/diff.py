@@ -1,6 +1,9 @@
-import sys, optparse
+import argparse
+import sys
+import filecmp
+import os
+import re
 import itertools
-
 from difflib import Differ, SequenceMatcher
 
 class POSIXDiffer(Differ):
@@ -59,33 +62,180 @@ def pdiff(a, b):
     return POSIXDiffer().compare(a, b)
 
 
-def main():
+def compare_binary_files(f1, f2):
+    # Compare sizes first.  Don't bother comparing unless sizes are the same.
+    if os.path.getsize(f1) != os.path.getsize(f2):
+        return False
+
+    # Taken from https://github.com/python/cpython/blob/3.6/Lib/filecmp.py
+    # _do_cmp()
+    bufsize = 8*1024
+    with open(f1, 'rb') as fp1, open(f2, 'rb') as fp2:
+        while True:
+            b1 = fp1.read(bufsize)
+            b2 = fp2.read(bufsize)
+            if b1 != b2:
+                return False
+            if not b1:
+                return True
+
+def compare_text_files(file1, file2):
+    file1content = open(file1, 'U').readlines()
+    file2content = open(file2, 'U').readlines()
+    return pdiff(file1content, file2content)
+
+def compare_directories(options, dir1, dir2):
+    dc = filecmp.dircmp(dir1, dir2)
+    if dc.left_only:
+        print('Only in %s:' % (dc.left))
+        [print('    %s' % (x)) for x in dc.left_only]
+
+    if dc.right_only:
+        print('Only in %s:' % (dc.right))
+        [print('    %s' % (x)) for x in dc.right_only]
+
+    incre = None
+    if options.include:
+        incre = re.compile(options.include)
+
+    excre = None
+    if options.exclude:
+        excre = re.compile(options.exclude)
+
+    if dc.common_files:
+        for common_file in dc.common_files:
+            file1 = os.path.join(dc.left,  common_file)
+            file2 = os.path.join(dc.right, common_file)
+
+            # Skip this file if inclusion filter is in effect but
+            # file does not match.
+            if incre is not None and not incre.search(file1):
+                continue
+
+            # Skip this file if exclusion filter is in effect and
+            # file matches.
+            if excre is not None and excre.search(file1):
+                continue
+
+            title = 'diff %s %s' % (file1, file2)
+            printed_title = False
+            try:
+                for difference in compare_text_files(file1, file2):
+                    if options.brief:
+                        # Found a difference.  Report it.  No need to continue.
+                        print('%s %s : files are different' % (file1, file2))
+                        break
+
+                    # If we get to here, we are verbose (not brief).
+                    # Print the title once...
+                    if not printed_title:
+                        print(title)
+                        printed_title = True
+
+                    # ...followed by the differences.
+                    sys.stdout.writelines(difference)
+            except UnicodeDecodeError:
+                # Binary file.
+                if options.binary and not compare_binary_files(file1, file2):
+                    print('%s %s : binary files are different' % (file1, file2))
+
+    # Descend down the tree into common directories.
+    subre = None
+    if options.subdir:
+        subre = re.compile(options.subdir)
+    for common_dir in dc.common_dirs:
+        # Skip this subdirectory if subdirectory filter is in effect and
+        # subdirectory matches.  Notice the fullmatch() here, not search().
+        if subre is not None and subre.fullmatch(common_dir):
+            continue
+
+        compare_directories(
+            options,
+            os.path.join(dc.left,  common_dir),
+            os.path.join(dc.right, common_dir))
+
+
+def main(options):
     """
-    This program is based on Python's difflib sample program, Tools\Scripts\diff.py.
+    This program is based on Python's difflib sample program, Tools/Scripts/diff.py.
 
     It produces differences in the POSIX format.
 
     See http://www.unix.com/man-page/POSIX/1posix/diff/
     """
 
-    usage = "usage: %prog file1 file2"
-    parser = optparse.OptionParser(usage)
-    (options, args) = parser.parse_args()
+    if not options.recursive:
+        file1 = options.arg[0]
+        if not os.path.isfile(file1):
+            print('ERROR: %s is not a file' % (file1))
+            return 1
 
-    if len(args) == 0:
-        parser.print_help()
-        sys.exit(1)
-    if len(args) != 2:
-        parser.print_help()
+        file2 = options.arg[1]
+        if not os.path.isfile(file2):
+            print('ERROR: %s is not a file' % (file2))
+            return 1
 
-    file1, file2 = args
+        try:
+            sys.stdout.writelines(compare_text_files(file1, file2))
+        except UnicodeDecodeError:
+            if options.binary and not compare_binary_files(file1, file2):
+                print('%s %s : binary files are different' % (file1, file2))
+    else:
+        compare_directories(options, options.arg[0], options.arg[1])
+    return 0
 
-    file1lines = open(file1, 'U').readlines()
-    file2lines = open(file2, 'U').readlines()
-
-    diff = pdiff(file1lines, file2lines)
-
-    sys.stdout.writelines(diff)
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument(
+        '-i',
+        '--include',
+        dest='include',
+        help='Inclusion regex to apply to file path when performing recursive directory comparisons.')
+
+    parser.add_argument(
+        '-e',
+        '--exclude',
+        dest='exclude',
+        help='Exclusion regex to apply to file path when performing recursive directory comparisons.')
+
+    parser.add_argument(
+        '-s',
+        '--subdir',
+        dest='subdir',
+        help='Subdirectory exlusion regex to apply to subdirectory names when performing recursive directory comparisons.')
+
+    parser.add_argument(
+        '-b',
+        '--binary',
+        dest='binary',
+        help='Compare and report on binary files.',
+        action='store_true',
+        default=False)
+
+    parser.add_argument(
+        '-r',
+        '--recursive',
+        dest='recursive',
+        help='Recursively compare subdirectories.',
+        action='store_true',
+        default=False)
+
+    parser.add_argument(
+        '-q',
+        '--brief',
+        dest='brief',
+        help='When performing recursive directory comparisons, only report when files are different.',
+        action='store_true',
+        default=False)
+
+    parser.add_argument(
+        'arg',
+        help='Names of files or directories to compare.',
+        nargs=2)
+
+    options = parser.parse_args()
+
+    sys.exit(main(options))
+
