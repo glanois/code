@@ -1,1 +1,12 @@
+# See https://github.com/github/gitignore
+
+# Mac
 .DS_Store
+
+# Emacs
+*~
+
+# Python
+__pycache__/
+*.py[cod]
+
