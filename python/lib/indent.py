@@ -1,4 +1,4 @@
-""" Indent - Impilement text indentation.  Useful for pretty printing. """
+""" Indent - Implement text indentation.  Useful for pretty printing. """
 
 class Indent:
     def __init__(self, spaces = 4):
