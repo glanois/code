@@ -1,0 +1,4 @@
+# Custom file extension so that GitHub's Linguist properly detects language type.
+# See https://github.com/github/linguist - "Overrides" / "Using gitattributes"
+*.py linguist-language=Python
+*.pl linguist-language=Perl
