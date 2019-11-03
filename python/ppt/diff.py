@@ -82,15 +82,9 @@ def compare_text_files(file1, file2):
     file2content = open(file2, 'U').readlines()
     return pdiff(file1content, file2content)
 
+
 def compare_directories(options, dir1, dir2):
     dc = filecmp.dircmp(dir1, dir2)
-    if dc.left_only:
-        print('Only in %s:' % (dc.left))
-        [print('    %s' % (x)) for x in dc.left_only]
-
-    if dc.right_only:
-        print('Only in %s:' % (dc.right))
-        [print('    %s' % (x)) for x in dc.right_only]
 
     incre = None
     if options.include:
@@ -99,6 +93,43 @@ def compare_directories(options, dir1, dir2):
     excre = None
     if options.exclude:
         excre = re.compile(options.exclude)
+
+    # Apply inclusion/exclusion to "only in" files too.
+    # Only print the header if there is at least one file that passes
+    # the inclusion/exclusion.
+
+    if dc.left_only:
+        hdr = False
+        for f in dc.left_only:
+            passed = True
+
+            if excre is not None and excre.search(f):
+                passed = False
+
+            if incre is not None and not incre.search(f):
+                passed = False
+
+            if passed:
+                if not hdr:
+                    print('Only in %s:' % (dc.left))
+                    hdr = True
+                print('    %s' % (f))
+
+    if dc.right_only:
+        hdr = False
+        for f in dc.right_only:
+            passed = True
+            if excre is not None and excre.search(f):
+                passed = False
+
+            if incre is not None and not incre.search(f):
+                passed = False
+
+            if passed:
+                if not hdr:
+                    print('Only in %s:' % (dc.right))
+                    hdr = True
+                print('    %s' % (f))
 
     if dc.common_files:
         for common_file in dc.common_files:
