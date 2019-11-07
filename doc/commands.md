@@ -20,7 +20,7 @@
 | ack -g --ignore-ack-defaults --type-set emacs:match:/~$/ --type=emacs . | Find Emacs backup files
 | ack -g _stuff_ \| xargs rm | Delete stuff ack found
 | ack -l _string1_ \| xargs perl -pi -E 's/_string1_/_string2_/g' | Global search and replace _string1_ with _string2_ (Linux) 
-| ack -l _string1_ \| xargs perl -p -i.bak -E 's/_string1_/_string2_/' | Global search and replace _string1_ with _string2_ (Windows)
+| ack -l _string1_ \| xargs perl -p -i.bak -E "s/_string1_/_string2_/" | Global search and replace _string1_ with _string2_ (Windows)
 
 # Perl
 
