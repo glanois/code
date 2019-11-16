@@ -1,6 +1,6 @@
 import socket
 
-class UdpListener:
+class UdpReceiver:
     """ Receive from UDP socket.
         Test with socat - forwards stdin to addr:port
             socat - UDP-SENDTO:127.0.0.1:51001
@@ -12,9 +12,22 @@ class UdpListener:
     def bind(self, address, port):
         self._sock.bind( (address, port) )
 
-    def get(self, size):
+    def recvfrom(self, size):
         data, address = self._sock.recvfrom(size)
         return data, address
+
+
+class UdpSender:
+    """ Send to UDP endpoint.
+        Test with socat - 
+            socat - UDP-RECV:127.0.0.1:51001
+    """
+    def __init__(self):
+        self._input = None
+        self._sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+    def sendto(self, address, port, data):
+        self._sock.sendto(bytes(data.encode('utf-8')), ( address, port ))
 
 
 class TcpServer:
