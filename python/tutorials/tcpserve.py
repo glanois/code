@@ -44,31 +44,6 @@ def main(options):
                 # No data received.  This means client has disconnected.
                 logging.info('main() no data received')
                 break
-        # while True:
-        #     try:
-        #         data = t.recv(16)
-        #     except socket.error as e:
-        #         # You'll get ECONNRESET if the client disconnects.
-        #         # Go back to accepting new connections.
-        #         logging.info('main() %s : %s' % (errno.errorcode[e.errno], os.strerror(e.errno)))
-        #     except Exception as msg:
-        #         logging.info('main() %s' % (msg))
-        #     else:
-        #         if data:
-        #             s = data.decode('ascii').rstrip()
-        #             if s == 'shutdown':
-        #                 t.close()
-        #                 shutdown = True
-        #                 break
-        #             elif s == 'ping':
-        #                 response = 'pong'
-        #                 t.sendall(bytes(response.encode('utf-8')))
-        #             else:
-        #                 print(s)
-        #         else:
-        #             # No data received.
-        #             logging.info('main() no data received')
-        #             break
     return 0
 
 
