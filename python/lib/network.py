@@ -65,6 +65,7 @@ class TcpServer:
         
     def accept(self):
         self._connection, client_address = self._sock.accept()
+        return client_address
 
     def recv(self, size):
         data = self._connection.recv(size)

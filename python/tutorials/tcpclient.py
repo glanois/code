@@ -9,10 +9,8 @@ import threading
 
 import lib.network
 
-def ping(event, tcp_client):
-    tcp_client.sendall('ping'.encode('utf-8'))
+def timer_callback(event):
     event.set()
-
         
 def main(options):
     logging.basicConfig(
@@ -22,12 +20,11 @@ def main(options):
 
     t = lib.network.TcpClient()
     t.connect(options.address[0], int(options.port[0]))
+    logging.info('main() connected to %s:%d' % (options.address[0], int(options.port[0])))
 
     while True:
-        e = threading.Event()
-        timer = threading.Timer(1.0, ping, (e, t))
-        timer.start()
-        e.wait()
+        t.sendall('ping'.encode('utf-8'))
+        logging.info('main() - sent: ping')
 
         response = ''
         while response != 'pong':
@@ -35,9 +32,12 @@ def main(options):
             if len(fragment) > 0:
                 fragment = fragment.decode('ascii').rstrip()
                 response += fragment
-          
-            if len(response) > 0:
-                logging.info(response)
+        logging.info('main() - got:  pong')
+
+        e = threading.Event()
+        timer = threading.Timer(1.0, timer_callback, (e,))
+        timer.start()
+        e.wait()
 
     return 0
 

@@ -4,18 +4,29 @@
        telnet 127.0.0.1 51001
 """
 
+import logging
 import sys
 import argparse
+import socket
+import errno
+import os
 
 import lib.network
 
 def main(options):
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format='%(asctime)s %(levelname)s - %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S')
+
     t = lib.network.TcpServer()
     t.bind(options.address[0], int(options.port[0]))
+    logging.info('main() bound to %s:%d' % (options.address[0], int(options.port[0])))
 
     shutdown = False
     while not shutdown:
-        t.accept()
+        client = t.accept()
+        logging.info('main() accepted client connection %s:%d' % (client))
         while True:
             data = t.recv(1024)
             if data:
@@ -30,8 +41,34 @@ def main(options):
                 else:
                     print(s)
             else:
-                # No data received.
+                # No data received.  This means client has disconnected.
+                logging.info('main() no data received')
                 break
+        # while True:
+        #     try:
+        #         data = t.recv(16)
+        #     except socket.error as e:
+        #         # You'll get ECONNRESET if the client disconnects.
+        #         # Go back to accepting new connections.
+        #         logging.info('main() %s : %s' % (errno.errorcode[e.errno], os.strerror(e.errno)))
+        #     except Exception as msg:
+        #         logging.info('main() %s' % (msg))
+        #     else:
+        #         if data:
+        #             s = data.decode('ascii').rstrip()
+        #             if s == 'shutdown':
+        #                 t.close()
+        #                 shutdown = True
+        #                 break
+        #             elif s == 'ping':
+        #                 response = 'pong'
+        #                 t.sendall(bytes(response.encode('utf-8')))
+        #             else:
+        #                 print(s)
+        #         else:
+        #             # No data received.
+        #             logging.info('main() no data received')
+        #             break
     return 0
 
 
