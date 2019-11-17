@@ -8,8 +8,6 @@ import logging
 import sys
 import argparse
 import socket
-import errno
-import os
 
 import lib.network
 
