@@ -76,3 +76,26 @@ class TcpServer:
     def close(self):
          self._connection.close()
 
+
+class TcpClient:
+    """ TCP/IP client.
+        Example usage:
+
+    """
+    def __init__(self):
+        self._input = None
+        self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    def connect(self, address, port):
+        self._sock.connect( (address, port) )
+        
+    def recv(self, size):
+        data = self._sock.recv(size)
+        return data
+
+    def sendall(self, data):
+        self._sock.sendall(data)
+
+    def close(self):
+         self._sock.close()
+
