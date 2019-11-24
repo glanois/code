@@ -9,35 +9,38 @@ import threading
 
 import lib.network
 
-def ping(event, tcp_client):
-    tcp_client.sendall('ping'.encode('utf-8'))
+def timer_callback(event):
     event.set()
-
         
 def main(options):
     logging.basicConfig(
         level=logging.DEBUG,
-        format='%(asctime)s %(levelname)s - %(message)s',
+        format='%(asctime)s %(name)s %(levelname)s - %(message)s',
         datefmt='%Y-%m-%d %H:%M:%S')
+    logger = logging.getLogger('main()')
 
     t = lib.network.TcpClient()
     t.connect(options.address[0], int(options.port[0]))
+    logger.info('connected to %s:%d' % (options.address[0], int(options.port[0])))
 
     while True:
+        t.sendall('ping'.encode('utf-8'))
+        logger.info('sent: ping')
+
+        response = t.recv(16)
+        if len(response) == 0:
+            # Connection closed.
+            logger.info('recv() returned 0 bytes')
+            break
+        else:
+            response = response.decode('ascii').rstrip()
+            if response == 'pong':
+                logger.info('got:  pong')
+
         e = threading.Event()
-        timer = threading.Timer(1.0, ping, (e, t))
+        timer = threading.Timer(1.0, timer_callback, (e,))
         timer.start()
         e.wait()
-
-        response = ''
-        while response != 'pong':
-            fragment = t.recv(16)
-            if len(fragment) > 0:
-                fragment = fragment.decode('ascii').rstrip()
-                response += fragment
-          
-            if len(response) > 0:
-                logging.info(response)
 
     return 0
 

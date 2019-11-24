@@ -4,18 +4,27 @@
        telnet 127.0.0.1 51001
 """
 
+import logging
 import sys
 import argparse
+import socket
 
 import lib.network
 
 def main(options):
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format='%(asctime)s %(levelname)s - %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S')
+
     t = lib.network.TcpServer()
     t.bind(options.address[0], int(options.port[0]))
+    logging.info('main() bound to %s:%d' % (options.address[0], int(options.port[0])))
 
     shutdown = False
     while not shutdown:
-        t.accept()
+        client = t.accept()
+        logging.info('main() accepted client connection %s:%d' % (client))
         while True:
             data = t.recv(1024)
             if data:
@@ -30,7 +39,8 @@ def main(options):
                 else:
                     print(s)
             else:
-                # No data received.
+                # No data received.  This means client has disconnected.
+                logging.info('main() no data received')
                 break
     return 0
 
