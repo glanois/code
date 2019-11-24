@@ -15,18 +15,11 @@ import argparse
 import sys
 import re
 
+
 def printlines(f, n):
     for i in range(n):
         print(f.readline().strip())
 
-
-def headstdin(numlines):
-    printlines(sys.stdin, numlines)
-
-
-def headfile(filename, numlines):
-    with open(filename, 'r') as f:
-        printlines(f, numlines)
 
 def main(numlines, options):
     result = 0
@@ -50,10 +43,11 @@ def main(numlines, options):
         if len(options.arg) == 0:
             # No filename given on the command line.
             # Process data directly from stdin.
-            headstdin(numlines)
+            printlines(sys.stdin, numlines)
         else:
             # Process data from the file.
-            headfile(options.arg[0], numlines)
+            with open(options.arg[0], 'r') as f:
+                printlines(f, numlines)
 
     return result
 
