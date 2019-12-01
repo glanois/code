@@ -4,12 +4,18 @@ Kafka peer mulithreaded python application.
 
 See https://kafka.apache.org/quickstart
 
+See https://pypi.org/project/kafka-python/
+
 
 Step 1: Download the code
 -------------------------
 
+Kafka:
 > tar -xzf kafka_2.12-2.3.1.tgz
 > cd kafka_2.12-2.3.1
+
+kafka-python:
+> pip3 install kafka-python
 
 
 Step 2: Start the server
