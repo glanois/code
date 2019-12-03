@@ -101,7 +101,7 @@ import queue
 import time
 import kafka
 import json
-
+import uuid
 
 class Transmitter(threading.Thread):
     def __init__(self, q, server, port, topic):
@@ -162,7 +162,7 @@ class Receiver(threading.Thread):
         consumer.close()
         
         
-class Application(threading.Thread):
+class MessageResponseApplication(threading.Thread):
     def __init__(self, server, port, topic):
         threading.Thread.__init__(self)
         self._stop_event = threading.Event()
@@ -179,7 +179,7 @@ class Application(threading.Thread):
         return self._stop_event.is_set()
 
     def process_message(self, msg):
-        logging.info('Application::process_message() - got %s' % (msg.decode('utf-8')))
+        logging.info('MessageResponseApplication::process_message() - got %s' % (msg.decode('utf-8')))
 
     def run(self):
         for t in self._threads:
@@ -199,43 +199,105 @@ class Application(threading.Thread):
             t.join()
 
 
-class MarcoPolo(Application):
-    def __init__(self, server, port, topic):
-        Application.__init__(self, server, port, topic)
-        self._stopping = False
+class HeartbeatApplication(threading.Thread):
+    def __init__(self, server, port, topic, period):
+        threading.Thread.__init__(self)
+        self._stop_event = threading.Event()
+        self._queue = queue.Queue()
+        self._thread = Transmitter(self._queue, server, port, topic)
+        self._period = period
 
+    def stop(self):
+        self._stop_event.set()
+
+    def stopped(self):
+        return self._stop_event.is_set()
+
+    def compose_message(self):
+        return 'Heartbeat'.encode('utf-8')
+
+    def run(self):
+        self._thread.start()
+        
+        while not self._stop_event.is_set():
+            msg = self.compose_message()
+            put = False
+            retries = 0
+            max_retries = 5
+            while not put and retries < max_retries:
+                try:
+                    self._queue.put(msg, timeout=1)
+                    put = True
+                except queue.Full:
+                    logging.warning('HeartbeatApplication::run() - transmitter queue is full, retrying.')
+
+            if not put:
+                logging.error('HeartbeatApplication::run() - failed to put incoming message onto transmitter queue.')
+
+            time.sleep(self._period)
+
+        self._thread.stop()
+        self._thread.join()
+
+
+class MarcoPolo(MessageResponseApplication):
+    def __init__(self, server, port, topic, appid):
+        MessageResponseApplication.__init__(self, server, port, topic)
+        self._appid = appid
+        
     def process_message(self, msg):
         msg = msg.decode('utf-8')
         if msg == 'marco':
-            response = 'polo'
+            response = 'polo %s' % (self._appid)
             self._out_queue.put(response.encode('utf-8'))
         elif msg == 'stop':
             self.stop()
         
 
-class PingPong(Application):
-    def __init__(self, server, port, topic):
-        Application.__init__(self, server, port, topic)
-        self._stopping = False
+class PingPong(MessageResponseApplication):
+    def __init__(self, server, port, topic, appid):
+        MessageResponseApplication.__init__(self, server, port, topic)
+        self._appid = appid
 
     def process_message(self, msg):
         msg = msg.decode('utf-8')
         if msg == 'ping':
-            response = 'pong'
+            response = 'pong %s' % (self._appid)
             self._out_queue.put(response.encode('utf-8'))
         elif msg == 'stop':
             self.stop()
         
 
+class HeartbeatId(HeartbeatApplication):
+    def __init__(self, server, port, topic, period, appid):
+        HeartbeatApplication.__init__(self, server, port, topic, period)
+        self._appid = appid
+
+    def compose_message(self):
+        msg = 'Heartbeat %s' % (self._appid)
+        return msg.encode('utf-8')
+
+
 def main(options):
-    
-    mp = MarcoPolo(options.server[0], options.port[0], options.topic[0])
+    appid = uuid.uuid4()
+    logging.info('**********************************************************************')
+    logging.info('appid = %s' % (appid))
+    logging.info('**********************************************************************')
+
+    mp = MarcoPolo(options.server[0], options.port[0], options.topic[0], appid)
     mp.start()
 
-    pp = PingPong(options.server[0], options.port[0], options.topic[0])
+    pp = PingPong(options.server[0], options.port[0], options.topic[0], appid)
     pp.start()
 
+    hb = HeartbeatId(options.server[0], options.port[0], options.topic[0], 3, appid)
+    hb.start()
+
     while not mp.stopped() or not pp.stopped():
+        time.sleep(1)
+
+    hb.stop()
+    while not hb.stopped():
         time.sleep(1)
 
     mp.join()
