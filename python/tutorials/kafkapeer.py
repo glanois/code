@@ -296,13 +296,15 @@ def main(options):
     while not mp.stopped() or not pp.stopped():
         time.sleep(1)
 
-    hb.stop()
-    while not hb.stopped():
-        time.sleep(1)
-
     mp.join()
     pp.join()
 
+    hb.stop()
+    while not hb.stopped():
+        time.sleep(1)
+        
+    hb.join()
+    
     return 0
 
 
