@@ -45,3 +45,4 @@ Add shortcuts to Windows Explorer RMB->Send To context menu:
 | tar cvf - ./_dir_ \| gzip > _dir_.tar.gz | tar and gzip directory
 | gunzip --stdout _filename_.tar.gz \| tar tvf - | 't' - table of contents
 | gunzip --stdout _filename_.tar.gz \| tar xvf - | 'x' - extract contents
+| find . ! -newermt "_YYYY_-_MM_-_DD_ _HH_:_MM_:_SS_"| Find files whose modification time is newer than _YYYY_-_MM_-_DD_ _HH_:_MM_:_SS_"
