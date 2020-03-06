@@ -40,13 +40,13 @@ def main(numlines, options):
         elif options.lines is not None:
             numlines = options.lines
 
-        if len(options.arg) == 0:
+        if not options.filename:
             # No filename given on the command line.
             # Process data directly from stdin.
             printlines(sys.stdin, numlines)
         else:
             # Process data from the file.
-            with open(options.arg[0], 'r') as f:
+            with open(options.filename, 'r') as f:
                 printlines(f, numlines)
 
     return result
@@ -74,9 +74,9 @@ if __name__ == '__main__':
         default=None)
 
     parser.add_argument(
-        'arg',
+        'filename',
         help='Name of file.',
-        nargs='*')
+        nargs='?')
 
     options = parser.parse_args()
 
