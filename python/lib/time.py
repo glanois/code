@@ -59,6 +59,17 @@ class TestToMilitaryTime(unittest.TestCase):
         self.assertEqual(to_military_time('12:00 PM'), '12:00')
 
     def test_all(self):
+        # Illegal times.
+        with self.assertRaises(ValueError):
+            to_military_time('13:00 am')
+        with self.assertRaises(ValueError):
+            to_military_time('99:00 am')
+        with self.assertRaises(ValueError):
+            to_military_time('12:60 am')
+        with self.assertRaises(ValueError):
+            to_military_time('garbage o\'clock pm')
+
+        # All legal times in a 24 hour period from 12:00 am to 11:59 pm.
         for h in lib.util.range_inclusive(0, 23):
             for m in lib.util.range_inclusive(0, 59):
                 # Military time.
