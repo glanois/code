@@ -3,6 +3,10 @@ domutil - XML DOM utilities.  The functions you wish had been included
 in xml.dom.minidom.
 """
 
+# Tell pydoc to only document these functions:
+__all__ = [ 'getChildrenByTagName', 'getNodeText', 'setNodeText' ]
+
+
 import xml.dom.minidom
 
 def getChildrenByTagName(node, tagName):

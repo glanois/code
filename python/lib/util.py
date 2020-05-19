@@ -1,5 +1,11 @@
-""" Yields a range that includes the last item. """
+""" Convenient utility functions. """
+
+# Tell pydoc to only document these functions:
+__all__ = [ 'range_inclusive' ]
+
+
 def range_inclusive(*args):
+    """ Yields a range that includes the last item. """
     numargs = len(args)
     if numargs == 0:
         raise TypeError('No argument(s) given.')
