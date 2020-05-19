@@ -1,5 +1,4 @@
-""" jsonpp - Pretty-print JSON from file or stdin.
-"""
+""" jsonpp - Pretty-print JSON from file or stdin. """
 import argparse
 import sys
 import json
