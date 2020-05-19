@@ -32,7 +32,7 @@ class ImageDisplay(Window):
         try:
             image = PIL.Image.open(filename)
         except:
-            print('ERROR: IOError - Cound not open %s' % (filename))
+            print('ERROR: IOError - Could not open %s' % (filename))
         else:
             width, height = image.size
             scale = 1.0
@@ -54,7 +54,7 @@ class ImageDisplay(Window):
 
 
 def main(options):
-    image_display = ImageDisplay(options.filename[0])
+    image_display = ImageDisplay(options.filename)
     image_display.mainloop()
     return 0
 
@@ -62,7 +62,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument(
         'filename',
-        help='Display an image.',
-        nargs=1)
+        help='Display an image.')
+
     options = parser.parse_args()
     sys.exit(main(options))
