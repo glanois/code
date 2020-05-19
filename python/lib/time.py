@@ -1,7 +1,12 @@
+""" Convenient time handling functions. """
+
+# Tell pydoc to only document these functions:
+__all__ = [ 'to_military_time' ]
+
 from datetime import datetime
 
-""" Converts hours/minutes am/pm to millitary time. """
 def to_military_time(x):
+    """ Converts hours/minutes am/pm to millitary time. """
     return datetime.strptime(x, "%I:%M %p").strftime("%H:%M")
 
 import unittest
@@ -57,7 +62,7 @@ class TestToMilitaryTime(unittest.TestCase):
         for h in lib.util.range_inclusive(0, 23):
             for m in lib.util.range_inclusive(0, 59):
                 # Military time.
-                tm   = f'{h:02d}:{m:02d}'
+                tm = f'{h:02d}:{m:02d}'
                 h12 = h
                 if h <= 11:
                     apm = 'am'

@@ -1,3 +1,8 @@
+""" Basic UDP send/receive and TCP/IP client/server classes. """
+
+# Tell pydoc to only document these classes:
+__all__ = [ 'UdpReceiver', 'UdpSender', 'TcpServer', 'TcpClient' ]
+
 import socket
 
 class UdpReceiver:

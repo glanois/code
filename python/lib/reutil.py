@@ -1,5 +1,8 @@
 """ reutil - Regular expression utilities. """
 
+# Tell pydoc to only document these functions:
+__all__ = [ 'multiple_replace' ]
+
 import re
 
 def multiple_replace(text, adict):

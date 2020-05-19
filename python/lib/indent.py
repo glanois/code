@@ -1,5 +1,8 @@
 """ Indent - Implement text indentation.  Useful for pretty printing. """
 
+# Tell pydoc to only document these classes:
+__all__ = [ 'Indent' ]
+
 class Indent:
     def __init__(self, spaces = 4):
         self._spaces = ' ' * spaces
