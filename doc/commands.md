@@ -48,3 +48,4 @@ Add shortcuts to Windows Explorer RMB->Send To context menu:
 | find . ! -newermt "_YYYY_-_MM_-_DD_ _HH_:_MM_:_SS_"| Find files whose modification time is newer than _YYYY_-_MM_-_DD_ _HH_:_MM_:_SS_"
 | dd if=/dev/random count=1 bs=16 status=none \| hexdump -ve '/1 "%04x"'| Generate 1 block of 16 random bytes and print as hex ASCII
 | cat _filename_.csv \| (read -r; printf "%s\n" "$REPLY"; sort -t"," -k2) > _filename_-sorted.csv | Sort a CSV file by its 2nd column, keeping the header record as the first record.
+| xdg-open _filename_or_url_ | Opens the file or URL in the preferred application.
