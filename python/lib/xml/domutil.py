@@ -17,8 +17,13 @@ def getChildrenByTagName(node, tagName):
 
 
 def getNodeText(node):
-    return ''.join(t.nodeValue for t in node.childNodes if t.nodeType == t.TEXT_NODE)
-
+    text = ''
+    for t in node.childNodes:
+        if t.nodeType == t.TEXT_NODE:
+            text = text + t.nodeValue
+        elif t.nodeType == node.CDATA_SECTION_NODE:
+            text = text + t.data
+    return text
 
 def setNodeText(node, newText):
     if not node.firstChild:
@@ -66,6 +71,12 @@ class TestDomutilFunctions(unittest.TestCase):
             setNodeText(zzz, 'this other text')
         self.assertTrue('node child is not a text node' in str(cmz.exception))
         
+        # Test CDATA.
+        ttt = doc.createElement('ttt')
+        s = 'cdtcdtcdtcdt'
+        ttt.appendChild(doc.createCDATASection(s))
+        self.assertEqual(getNodeText(ttt), s)
+
     def test_get_children_by_tag_name(self):
         # Create a document with a root node to work with.
         impl = xml.dom.minidom.getDOMImplementation()

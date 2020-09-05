@@ -80,7 +80,7 @@ def generate_cells(xstep, ystep, upper_left, lower_right):
 
 import unittest
 
-class TestIndentMethods(unittest.TestCase):
+class TestGridMethods(unittest.TestCase):
     def test_constructor_default(self):
         region = {
             'upper_left': {
