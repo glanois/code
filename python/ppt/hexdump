@@ -1,0 +1,9 @@
+# /bin/bash
+
+# PREREQUISITE
+# https://pypi.org/project/hexdump/
+# pip3 install --user hexdump
+
+# Let the module do all the work.
+python3 -m hexdump $@
+
