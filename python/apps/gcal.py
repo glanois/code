@@ -64,7 +64,7 @@ class Calendar(Window):
         self.update()
 
     def home(self, event):
-        self._year += 1
+        self._year = datetime.datetime.now().year
         self.update()
 
 
