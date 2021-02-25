@@ -52,7 +52,7 @@ def main(options):
 
     time.sleep(5)
         
-if __name__ == "__main__":
+if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
