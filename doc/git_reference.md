@@ -121,6 +121,7 @@ git merge origin/master
 git checkout <branch_name>
 git merge master
 git push origin <branch_name>
+```
 
 Alternatively, you can do a rebase:
 
