@@ -78,6 +78,15 @@ git checkout <sub-branchname>
 
 `git remote update origin --prune`
 
+## Rename a local and remote branch
+
+```
+git checkout <oldname>
+git branch -m <newname>
+git push -u origin <newname>
+git push origin --delete <oldname>
+```
+
 ## Delete remote and local branch
 
 ```
