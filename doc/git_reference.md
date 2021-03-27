@@ -12,7 +12,7 @@ https://stackoverflow.com/questions/45742607/switch-to-native-windows-secure-cha
 
 https://git-scm.com/book/en/v2/Getting-Started-First-Time-Git-Setup
 
-`git config --list --show origin1
+`git config --list --show origin`
 
 ## Flag as untracked a file when its case changes
 
@@ -314,6 +314,32 @@ Subsequent pushed don't need the `-u origin <branch>`, you can just `git push`.
 ## Delete a directory
 
 `git rm -r <directory>`
+
+## Deleting a clone
+
+If you get permission errors deleting a clone, such as:
+
+```
+$ rm -rf myclone 
+.
+.
+.
+rm: myclone/.git/objects/fb/15c0ea4797c8fd3c3f11feb868405c6efb4d4a: Operation not permitted
+rm: myclone/.git/objects/fb/eb8e3b7a5ed670c73be41c664f90102b4ab6f8: Operation not permitted
+rm: myclone/.git/objects/fb: Directory not empty
+rm: myclone/.git/objects: Directory not empty
+rm: myclone/.git: Directory not empty
+rm: myclone: Directory not empty
+```
+
+Normally you'd `ls -la` and `chmod` to fix this.  If that doesn't work,
+chances are the `uchg` (immutable) flag has been set.  You can unset that with:
+
+```
+$ chflags -R nouch ./myclone
+```
+
+Then you should be able to `rm -rf` it.
 
 # PULL REQUEST
 
