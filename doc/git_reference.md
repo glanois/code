@@ -336,7 +336,7 @@ Normally you'd `ls -la` and `chmod` to fix this.  If that doesn't work,
 chances are the `uchg` (immutable) flag has been set.  You can unset that with:
 
 ```
-$ chflags -R nouch ./myclone
+$ chflags -R nouchg ./myclone
 ```
 
 Then you should be able to `rm -rf` it.
