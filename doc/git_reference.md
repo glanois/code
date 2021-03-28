@@ -207,6 +207,14 @@ Note that `git status` has more/better information.
 
 `git reset <file>`
 
+## List all untracked files
+
+`git ls-files -o --exclude-standard`
+
+Null-separate filenames and do something with them:
+
+`git ls-files -z -o --exclude-standard | xargs -0 -I {} cmd {}`
+
 # STASH
 
 ## Stash all pending work
