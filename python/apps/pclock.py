@@ -24,9 +24,19 @@ class FloatingBorderlessWindow(tkinter.Tk):
     def __init__(self, master=None):
         tkinter.Tk.__init__(self, master)
 
-        if self.tk.call('tk', 'windowingsystem') == 'x11':
+        ws = self.tk.call('tk', 'windowingsystem')
+        if ws == 'x11':
             # Use this on Linux (or anything with X Window).
             self.wm_attributes('-type', 'splash')
+        elif ws == 'aqua':
+            # MacOS X
+            # TODO - figure out how to hide the titlebar on Mac.
+            # Tried:
+            # self.wm_attributes('-type', 'splash')
+            # self.wm_overrideredirect(True)
+            # self.overrideredirect(True)
+            # self.overrideredirect(1)
+            # self.attributes('-toolwindow', 1)
         else:
             # Use this on Windows:
             self.overrideredirect(True)
