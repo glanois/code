@@ -39,8 +39,13 @@ https://superuser.com/questions/1318231/why-doesnt-clipboard-sharing-work-with-u
 
 ### Method 1 - from Linux command line
 
+```
 sudo apt-get update
 sudo apt-get install virtualbox-guest-x11
+sudo apt-get install virtualbox-guest-dkms
+```
+
+(Note - `virtualbox-guest-x11` includes `virtualbox-guest-utils`)
 
 ### Method 2 - from VirtualBox menu bar
 
@@ -73,8 +78,35 @@ sudo apt install gcc
 sudo apt install g++
 sudo apt install make
 sudo apt install git
-sudo apt install python
 sudo apt install python3
+```
+
+## Shared Folder
+
+### Host Side Configuration
+
+In MacOS, Virtual Box->Settings->Shared Folders - click the 'add folder' icon (upper right).
+
+Select a folder to share (typically put in in the VM folder and call it `share`).
+
+Check the automount check box.
+
+Leave the mount point empty.
+
+### Guest OS Side Configuration
+
+Install the guest addtions as described above.
+
+Add yourself to the `vboxsf` group:
+```
+sudo adduser <username> vboxsf
+```
+
+Reboot.
+
+Test it:
+```
+touch /media/sf_share/testfile
 ```
 
 # PERSONALIZE

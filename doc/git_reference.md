@@ -22,6 +22,13 @@ https://git-scm.com/book/en/v2/Getting-Started-First-Time-Git-Setup
 
 https://support.microsoft.com/en-us/windows/accessing-credential-manager-1b5c916a-6a16-889f-8581-fc16e8165ac0
 
+## Email and user name configuration
+
+```
+git config --global user.email "you@example.com"
+git config --global user.name "Your Name"
+```
+
 # REPOSITORY
 
 ## Clone a repository (default repo name)
