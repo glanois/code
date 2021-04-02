@@ -14,7 +14,7 @@
 |---------|-------------|
 | ack --help-types | Examples: --make --cpp --python --cmake
 | ack -g _pattern_ | Find files whose names match _pattern_
-| ack -g _pattern1_ | ack -x _pattern2_ | Find in files whose names are given in stdin
+| ack -g _pattern1_ \| ack -x _pattern2_ | Find in files whose names are given in stdin
 | ack "\[^\\x00-\\x7F]" | Find non-ASCII characters
 | ack -g --ignore-ack-defaults --type-set backup:ext:bak --type=backup . | Find .bak files
 | ack -g --ignore-ack-defaults --type-set emacs:match:/~$/ --type=emacs . | Find Emacs backup files
