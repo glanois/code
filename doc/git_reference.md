@@ -416,3 +416,8 @@ Now you can invoke it from the command line:
 
 https://stackoverflow.com/questions/2468230/how-to-use-winmerge-with-git-extensions
 
+# GITHUB
+
+## Add issues to a fork
+
+Go into your fork, click `Settings`, go to the `Features` section, and set the `Issues` checkbox.
