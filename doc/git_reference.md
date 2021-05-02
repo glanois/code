@@ -45,6 +45,13 @@ This will cone to a folder whose name is given in the URL ending in .git.
 
 `git clone <url> -b <branchname> --single-branch <folder>`
 
+## Clone a specific tag of a repository
+
+`git clone --depth 1 --branch <tag_name> <repo_url>`
+
+Ref:
+https://stackoverflow.com/questions/20280726/how-to-git-clone-a-specific-tag/27421557
+
 # BRANCH
 
 ## What branch am I on, and what ones are available
