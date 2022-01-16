@@ -423,6 +423,32 @@ Now you can invoke it from the command line:
 
 https://stackoverflow.com/questions/2468230/how-to-use-winmerge-with-git-extensions
 
+## Git Thinks All Your Files Change
+
+This can happen when you move your work from one OS and/or computer to another.  It looks like this:
+
+```
+karkand:bld gerard$ git diff
+diff --git a/.gitignore b/.gitignore
+old mode 100644
+new mode 100755
+diff --git a/.gitlab-ci.yml b/.gitlab-ci.yml
+old mode 100644
+new mode 100755
+diff --git a/app/hexdump/src/hexdump.cpp b/app/hexdump/src/hexdump.cpp
+old mode 100644
+new mode 100755
+diff --git a/bld/Doxyfile b/bld/Doxyfile
+old mode 100644
+new mode 100755
+```
+
+You can fix it by piping the mode changes through ```xargs chmod```:
+```
+git diff --summary | grep  'mode change 100644 => 100755' | cut -d' ' -f7- | xargs -E '\n' chmod -x
+```
+
+
 # GITHUB
 
 ## Add issues to a fork
