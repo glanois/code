@@ -14,8 +14,6 @@ def _fullpath(p):
     return os.path.abspath(os.path.expanduser(p))
 
 def _mkdir(p):
-    print('_mdkir() p = {}, p.find(''p'') = {}'.format(p, p.find('/')))
-    
     if p.find("/") > -1 and not os.path.exists(os.path.dirname(p)):
         os.makedirs(os.path.dirname(p))
 
