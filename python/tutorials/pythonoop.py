@@ -27,7 +27,7 @@ class B(A):
 
 import unittest
 
-class TestIndentMethods(unittest.TestCase):
+class TestSubclassConstructor(unittest.TestCase):
     def test_B(self):
         b = B()
         self.assertEqual(b.data, [4, 5])
