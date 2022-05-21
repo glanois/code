@@ -19,17 +19,23 @@
 | ack -g --ignore-ack-defaults --type-set backup:ext:bak --type=backup . | Find .bak files
 | ack -g --ignore-ack-defaults --type-set emacs:match:/~$/ --type=emacs . | Find Emacs backup files
 | ack -g _stuff_ \| xargs rm | Delete stuff ack found
-| ack -l _string1_ \| xargs perl -pi -E 's/_string1_/_string2_/g' | Global search and replace _string1_ with _string2_ (Linux) 
-| ack -l _string1_ \| xargs perl -p -i.bak -E "s/_string1_/_string2_/" | Global search and replace _string1_ with _string2_ (Windows)
+| ack -l _string1_ \| xargs perl -pi -e 's/_string1_/_string2_/g' | Global search and replace _string1_ with _string2_ (Linux) 
+| ack -l _string1_ \| xargs perl -p -i.bak -e "s/_string1_/_string2_/" | Global search and replace _string1_ with _string2_ (Windows)
+| ack --print0 -l '[ \t]+$' \| xargs -0 -n1 perl -pi -e 's/[ \t]+$//' | Trim trailing whitespace from files (Linux)
+| ack --print0 -l "[ \t]+$" \| xargs -0 -n1 perl -pi.bak -e "s/[ \t]+$//" | Trim trailing whitespace from files (Linux)
 
 # Perl
 
 | Command | Description|
 |---------|------------|
 | perl -wnl -e "/_regex_/ and print;" _filename_ | Use \\x22 to represent double quotes in _regex_
-| _something_ \| perl -wnl -e "/_regex_/ and print;" | Search for _regex_in stdin
+| _something_ \| perl -wnl -e "/_regex_/ and print;" | Search for _regex_ in stdin
 
 # Windows
+
+```xargs``` implementation for Windows:
+  * https://helloacm.com/simple-xargs-batch-implementation-for-windows/
+  * https://github.com/DoctorLai/BatchUtils/blob/master/xargs.cmd
 
 Quick and dirty file find: 
   * DIR /S /B *.h *.cpp
