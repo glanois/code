@@ -50,3 +50,4 @@ Add shortcuts to Windows Explorer RMB->Send To context menu:
 | cat _filename_.csv \| (read -r; printf "%s\n" "$REPLY"; sort -t"," -k2) > _filename_-sorted.csv | Sort a CSV file by its 2nd column, keeping the header record as the first record.
 | xdg-open _filename_or_url_ | Opens the file or URL in the preferred application.
 | lowriter --headless --convert-to odt *.docx | Convert all Microsoft Word files to LibreOffice format.
+| ifconfig \| grep "inet " \| grep -Fv 127.0.0.1 \| awk '{print $2}' | Print IP address.
