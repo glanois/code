@@ -31,6 +31,7 @@ class FloatingBorderlessWindow(tkinter.Tk):
         elif ws == 'aqua':
             # MacOS X
             # TODO - figure out how to hide the titlebar on Mac.
+            pass
             # Tried:
             # self.wm_attributes('-type', 'splash')
             # self.wm_overrideredirect(True)
