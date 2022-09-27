@@ -23,9 +23,9 @@ jobs:
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       - name: Test with unittest
         run: |
-          PYTHONPATH=./python/lib python -m unittest python/lib/indent.py
-          PYTHONPATH=./python/lib python -m unittest python/lib/reutil.py
-          PYTHONPATH=./python/lib python -m unittest python/lib/time.py 
-          PYTHONPATH=./python/lib python -m unittest python/lib/util.py
-          PYTHONPATH=./python/lib python -m unittest python/lib/xml/domutil.py 
-          PYTHONPATH=./python/lib python -m unittest python/lib/xml/util.py
+          PYTHONPATH=./python python -m unittest python/lib/indent.py
+          PYTHONPATH=./python python -m unittest python/lib/reutil.py
+          PYTHONPATH=./python python -m unittest python/lib/time.py 
+          PYTHONPATH=./python python -m unittest python/lib/util.py
+          PYTHONPATH=./python python -m unittest python/lib/xml/domutil.py 
+          PYTHONPATH=./python python -m unittest python/lib/xml/util.py
