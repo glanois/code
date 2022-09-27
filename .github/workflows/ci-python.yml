@@ -21,8 +21,12 @@ jobs:
       - name: Install dependencies
         run: |
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - name: Set PYTHONPATH
+        run: |
+          echo "::set-env name=PYTHONPATH::home/runner/work/code/python/lib"
       - name: Test with unittest
         run: |
+          echo $PYTHONPATH
           python -m unittest python/lib/indent.py
           python -m unittest python/lib/reutil.py
           python -m unittest python/lib/time.py 
