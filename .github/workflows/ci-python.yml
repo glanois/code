@@ -21,15 +21,11 @@ jobs:
       - name: Install dependencies
         run: |
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-      - name: Set PYTHONPATH
-        run: |
-          echo "::set-env name=PYTHONPATH::home/runner/work/code/python/lib"
       - name: Test with unittest
         run: |
-          echo $PYTHONPATH
-          python -m unittest python/lib/indent.py
-          python -m unittest python/lib/reutil.py
-          python -m unittest python/lib/time.py 
-          python -m unittest python/lib/util.py
-          python -m unittest python/lib/xml/domutil.py 
-          python -m unittest python/lib/xml/util.py
+          PYTHONPATH=./python/lib python -m unittest python/lib/indent.py
+          PYTHONPATH=./python/lib python -m unittest python/lib/reutil.py
+          PYTHONPATH=./python/lib python -m unittest python/lib/time.py 
+          PYTHONPATH=./python/lib python -m unittest python/lib/util.py
+          PYTHONPATH=./python/lib python -m unittest python/lib/xml/domutil.py 
+          PYTHONPATH=./python/lib python -m unittest python/lib/xml/util.py
