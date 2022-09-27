@@ -20,9 +20,12 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install pytest
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-      - name: Test with pytest
+      - name: Test with unittest
         run: |
-          pytest
+          python -m unittest python/lib/indent.py
+          python -m unittest python/lib/reutil.py
+          python -m unittest python/lib/time.py 
+          python -m unittest python/lib/util.py
+          python -m unittest python/lib/xml/domutil.py 
+          python -m unittest python/lib/xml/util.py
