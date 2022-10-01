@@ -1,0 +1,30 @@
+# https://docs.github.com/en/actions
+# https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+
+name: Python Unit Test
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10"]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          # Overall repo level requirements:
+          # if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          # Our library requirements:
+          pip install -r python/lib/requirements.txt
+      - name: Test with unittest
+        run: |
+          PYTHONPATH="$PYTHONPATH:./python:./python/tutorials" python -m unittest discover -v -s ./python

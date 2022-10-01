@@ -2,9 +2,6 @@
 util - XML utilities.
 """
 
-# Tell pydoc to only document these functions:
-__all__ = [ 'escape' ]
-
 xml_special_chars = {
     "<": "&lt;",
     ">": "&gt;",
@@ -30,21 +27,4 @@ $CDATA
 ]]>'''
     ctemplate = string.Template(cdata_template)
     return ctemplate.substitute(CDATA=s)
-
-
-import unittest
-
-class TestUtilFunctions(unittest.TestCase):
-    def test_escape(self):
-        for k,v in xml_special_chars.items():
-            self.assertEqual(escape(k), xml_special_chars[k])
-    
-    def test_cdata(self):
-        hello = '''<![CDATA[
-hello
-]]>'''
-        self.assertEqual(cdata('hello'), hello)
-        
-if __name__ == '__main__':
-    unittest.main()
 

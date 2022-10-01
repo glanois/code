@@ -1,8 +1,4 @@
-""" Convenient utility functions. """
-
-# Tell pydoc to only document these functions:
-__all__ = [ 'range_inclusive', 'Stack' ]
-
+""" util - Convenient utility functions. """
 
 class Stack:
     def __init__(self):
@@ -73,7 +69,3 @@ class TestRangeInclusive(unittest.TestCase):
             self.assertEqual(list(range_inclusive(i)), list(range(i+1)))
             self.assertEqual(list(range_inclusive(0, i)), list(range(0, i+1)))
             self.assertEqual(list(range_inclusive(0, i, 1)), list(range(0, i+1, 1)))
-
-
-if __name__ == '__main__':
-    unittest.main()

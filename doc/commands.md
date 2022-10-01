@@ -31,6 +31,12 @@
 | perl -wnl -e "/_regex_/ and print;" _filename_ | Use \\x22 to represent double quotes in _regex_
 | _something_ \| perl -wnl -e "/_regex_/ and print;" | Search for _regex_ in stdin
 
+# Python
+
+| Command | Description|
+|---------|------------|
+| python -c "import sys; print('\\n'.join(sys.path))"| Print PYTHONPATH
+
 # Windows
 
 ```xargs``` implementation for Windows:
