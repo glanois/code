@@ -1,8 +1,5 @@
 """ reutil - Regular expression utilities. """
 
-# Tell pydoc to only document these functions:
-__all__ = [ 'multiple_replace' ]
-
 import re
 
 def multiple_replace(text, adict):
@@ -21,17 +18,3 @@ def multiple_replace(text, adict):
     def one_xlat(match):
         return adict[match.group(0)]
     return rx.sub(one_xlat, text)
-
-
-import unittest
-
-class TestMultipleReplace(unittest.TestCase):
-    def test_example(self):
-        d = { 'bbb' : 'xxx', 'ddd' : 'yyy' }
-        self.assertEqual( multiple_replace('aaa bbb ccc ddd', d), 'aaa xxx ccc yyy')
-
-
-if __name__ == '__main__':
-    unittest.main()
-
-        

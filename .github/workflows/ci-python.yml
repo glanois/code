@@ -21,12 +21,10 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
         run: |
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          # Overall repo level requirements:
+          # if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          # Our library requirements:
+          pip install -r python/lib/requirements.txt
       - name: Test with unittest
         run: |
-          PYTHONPATH=./python python -m unittest -v python/lib/indent.py
-          PYTHONPATH=./python python -m unittest -v python/lib/reutil.py
-          PYTHONPATH=./python python -m unittest -v python/lib/time.py 
-          PYTHONPATH=./python python -m unittest -v python/lib/util.py
-          PYTHONPATH=./python python -m unittest -v python/lib/xml/domutil.py 
-          PYTHONPATH=./python python -m unittest -v python/lib/xml/util.py
+          PYTHONPATH="$PYTHONPATH:./python:./python/tutorials" python -m unittest discover -v -s ./python

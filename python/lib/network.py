@@ -1,7 +1,4 @@
-""" Basic UDP send/receive and TCP/IP client/server classes. """
-
-# Tell pydoc to only document these classes:
-__all__ = [ 'UdpReceiver', 'UdpSender', 'TcpServer', 'TcpClient' ]
+""" network - Basic UDP send/receive and TCP/IP client/server classes. """
 
 import socket
 
@@ -21,6 +18,9 @@ class UdpReceiver:
         data, address = self._sock.recvfrom(size)
         return data, address
 
+    def close(self):
+        self._sock.close()
+
 
 class UdpSender:
     """ Send to UDP endpoint.
@@ -33,6 +33,9 @@ class UdpSender:
 
     def sendto(self, address, port, data):
         self._sock.sendto(bytes(data.encode('utf-8')), ( address, port ))
+
+    def close(self):
+        self._sock.close()
 
 
 class TcpServer:
@@ -80,13 +83,26 @@ class TcpServer:
         self._connection.sendall(data)
 
     def close(self):
-         self._connection.close()
+        if self._connection:
+            self._connection.close()
+        self._sock.close()
 
 
 class TcpClient:
     """ TCP/IP client.
         Example usage:
 
+        t = lib.network.TcpClient()
+        t.connect('localhost', int('55001'))
+        t.sendall('hello'.encode('utf-8'))
+        response = t.recv(32)
+        if len(response) == 0:
+            # Connection closed.
+            print('recv() returned 0 bytes')
+            break
+        else:
+            response = response.decode('ascii').rstrip()
+            print('response = ', response)
     """
     def __init__(self):
         self._input = None
