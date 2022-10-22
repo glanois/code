@@ -5,7 +5,7 @@ import os.path
 import uuid
 
 # Tell pydoc to only document these functions:
-__all__ = [ 'get_logger', 'set_level' ]
+__all__ = [ 'get_logger', 'get_stdout_logger', 'get_file_logger', 'set_level' ]
 
 
 def get_formatter():
