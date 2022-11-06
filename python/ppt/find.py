@@ -18,8 +18,17 @@ import re
 
 
 def find(path, aall, regex):
+    # Exclusion regular expression.
+    excre = None
+    if options.exclude:
+        excre = re.compile(options.exclude)
+
     for root, dirs, files in os.walk(path):
-        # Skip dot files and directories.
+        if excre is not None:
+            # Exclude directories which match excre.
+            dirs[:] = [d for d in dirs if not excre.search(d)] 
+
+        # Skip dot files and directories unless -a/--all is in effect.
         if not aall:
             # https://stackoverflow.com/questions/13454164/os-walk-without-hidden-folders
             # NOTE: os.walk() with topdown = True means dirs and files are modified in-place.
@@ -53,6 +62,12 @@ if __name__ == '__main__':
         help='Include hidden files and directories.',
         action='store_true',
         default=False)
+
+    parser.add_argument(
+        '-e',
+        '--exclude',
+        dest='exclude',
+        help='Exclusion regex to prevent recursing into directories which match.')
 
     parser.add_argument(
         'path',
