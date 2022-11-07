@@ -1,14 +1,16 @@
 """ find - Find files recursively and optionally filter with regular expression.
 
-usage: find.py [-h] [-a] path [regex ...]
+usage: find.py [-h] [-a] [-e EXCLUDE] path [regex ...]
 
 positional arguments:
-  path        Directory path to search.
-  regex       Optional regular expression to match on.
+  path                  Directory path to search.
+  regex                 Optional regular expression to match on.
 
 options:
-  -h, --help  show this help message and exit
-  -a, --all   Include hidden files and directories.
+  -h, --help            show this help message and exit
+  -a, --all             Include hidden files and directories.
+  -e EXCLUDE, --exclude EXCLUDE
+                        Exclusion regex to prevent recursing into directories which match.
 """
 
 import argparse
