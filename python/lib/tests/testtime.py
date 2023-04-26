@@ -4,6 +4,30 @@ import lib.util
 import lib.time
 import unittest
 
+class TestDoy(unittest.TestCase):
+    # Truth data - https://landweb.modaps.eosdis.nasa.gov/browse/calendar.html
+    def test_non_leap_year(self):
+        self.assertEqual(lib.time.doy('2023-01-01'), 1)
+        self.assertEqual(lib.time.doy('2023-01-31'), 31)
+        self.assertEqual(lib.time.doy('2023-02-01'), 32)
+        self.assertEqual(lib.time.doy('2023-02-28'), 59)
+        self.assertEqual(lib.time.doy('2023-03-01'), 60)
+        self.assertEqual(lib.time.doy('2023-12-31'), 365)
+
+        # Feb 29th illegal in a non-leap year.
+        with self.assertRaises(ValueError):
+            lib.time.doy('2023-02-29')
+
+    def test_leap_year(self):
+        self.assertEqual(lib.time.doy('2024-01-01'), 1)
+        self.assertEqual(lib.time.doy('2024-01-31'), 31)
+        self.assertEqual(lib.time.doy('2024-02-01'), 32)
+        self.assertEqual(lib.time.doy('2024-02-28'), 59)
+        self.assertEqual(lib.time.doy('2024-02-29'), 60)
+        self.assertEqual(lib.time.doy('2024-03-01'), 61)
+        self.assertEqual(lib.time.doy('2024-12-31'), 366)
+
+
 class TestToMilitaryTime(unittest.TestCase):
     def test_formats(self):
         # Missing am/pm.
