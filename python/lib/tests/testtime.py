@@ -27,6 +27,24 @@ class TestDoy(unittest.TestCase):
         self.assertEqual(lib.time.doy('2024-03-01'), 61)
         self.assertEqual(lib.time.doy('2024-12-31'), 366)
 
+class TestDateFromYearDoy(unittest.TestCase):
+    # Truth data - https://landweb.modaps.eosdis.nasa.gov/browse/calendar.html
+    def test_non_leap_year(self):
+        self.assertEqual(lib.time.date_from_year_doy(2022, 0.0), '2022-01-01T00:00:00')
+        self.assertEqual(lib.time.date_from_year_doy(2022, 30.99999), '2022-01-31T23:59:59.136000')
+        self.assertEqual(lib.time.date_from_year_doy(2022, 31.0), '2022-02-01T00:00:00')
+        self.assertEqual(lib.time.date_from_year_doy(2022, 58.0), '2022-02-28T00:00:00')
+        self.assertEqual(lib.time.date_from_year_doy(2022, 58.9999999), '2022-02-28T23:59:59.991360')
+        self.assertEqual(lib.time.date_from_year_doy(2022, 59.0), '2022-03-01T00:00:00')
+        self.assertEqual(lib.time.date_from_year_doy(2022, 364.9999999), '2022-12-31T23:59:59.991360')
+        self.assertEqual(lib.time.date_from_year_doy(2022, 365.0), '2023-01-01T00:00:00')
+
+    def test_leap_year(self):
+        self.assertEqual(lib.time.date_from_year_doy(2024, 58.0), '2024-02-28T00:00:00')
+        self.assertEqual(lib.time.date_from_year_doy(2024, 58.9999999), '2024-02-28T23:59:59.991360')
+        self.assertEqual(lib.time.date_from_year_doy(2024, 59.0), '2024-02-29T00:00:00')
+        self.assertEqual(lib.time.date_from_year_doy(2024, 365.9999999), '2024-12-31T23:59:59.991360')
+        self.assertEqual(lib.time.date_from_year_doy(2024, 366.0), '2025-01-01T00:00:00')
 
 class TestToMilitaryTime(unittest.TestCase):
     def test_formats(self):
