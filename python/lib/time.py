@@ -15,6 +15,6 @@ def doy(ds):
 
 
 def to_military_time(x):
-    """ Converts hours/minutes am/pm to millitary time. """
+    """ Converts hours/minutes am/pm to military time. """
     return datetime.datetime.strptime(x, "%I:%M %p").strftime("%H:%M")
 
