@@ -78,8 +78,8 @@ def compare_binary_files(file1, file2):
                 return True
 
 def compare_text_files(file1, file2):
-    file1content = open(file1, 'U').readlines()
-    file2content = open(file2, 'U').readlines()
+    file1content = open(file1).readlines()
+    file2content = open(file2).readlines()
     return pdiff(file1content, file2content)
 
 
