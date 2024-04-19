@@ -28,6 +28,3 @@ jobs:
       - name: Test with unittest
         run: |
           PYTHONPATH="$PYTHONPATH:./python:./python/tutorials" python -m unittest discover -v -s ./python
-
-runs:
-  using: 'node20'
