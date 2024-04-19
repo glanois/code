@@ -11,3 +11,7 @@ jobs:
       - uses: actions/setup-node@v4
       - run: npm install -g bats
       - run: bats -v
+
+
+runs:
+  using: 'node20'
