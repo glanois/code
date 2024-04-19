@@ -54,6 +54,10 @@ https://stackoverflow.com/questions/20280726/how-to-git-clone-a-specific-tag/274
 
 # BRANCH
 
+## What branch am I on
+
+`git branch --show-current`
+
 ## What branch am I on, and what ones are available
 
 `git branch -v -a`
@@ -70,7 +74,7 @@ https://stackoverflow.com/questions/20280726/how-to-git-clone-a-specific-tag/274
 
 Beware that the new branch will be created as a sub-branch of the branch you are currently on at the time you issue the command.
 
-If you want the new branch to be a branch off of master, be sure to switch to the master branch first (`git checkout master`) before creating the sub-branch.
+Ordinarily you will want the new branch to be a branch off of master, therefore be sure to switch to the master branch first (`git checkout master`) before creating the sub-branch.
 
 `git checkout -b <sub-branchname>`
 
@@ -101,10 +105,9 @@ git push -u origin <newname>
 git push origin --delete <oldname>
 ```
 
-## Delete remote and local branch
+## Delete local branch
 
 ```
-git push --delete <remote_name> <branchname>
 git branch --delete <branchname>
 ```
 
@@ -115,6 +118,12 @@ You'll be warnted about the branch not being fully merged; use `-D` instead.
 ## Delete remote tracking reference
 
 `git branch -d -r origin/<branchname>`
+
+## Delete remote branch
+
+```
+git push --delete <remote_name> <branchname>
+```
 
 ## Update master after pull request is merged
 
@@ -139,8 +148,7 @@ git merge
 
 ```
 git checkout master
-git fetch -p origin
-git merge origin/master
+git pull
 git checkout <branch_name>
 git merge master
 git push origin <branch_name>
@@ -155,7 +163,7 @@ git rebase origin/master
 
 ## Merge a commit from another branch
 
-1. In source branch, do a `git log` and shop the SHA hash of the commit.
+1. In source branch, do a `git log` and copy the SHA hash of the commit.
 
 1. Checkout the destination branch, then...
 
@@ -365,7 +373,7 @@ Then you should be able to `rm -rf` it.
 
 # PULL REQUEST
 
-## Delete a pulll request
+## Delete a pull request
 
 First, make a backup of any changes you might want to preserve, say for a second attempt.
 
@@ -423,7 +431,7 @@ Now you can invoke it from the command line:
 
 https://stackoverflow.com/questions/2468230/how-to-use-winmerge-with-git-extensions
 
-## Git Thinks All Your Files Change
+## Git Thinks All Your Files Changed
 
 This can happen when you move your work from one OS and/or computer to another.  It looks like this:
 
@@ -447,7 +455,6 @@ You can fix it by piping the mode changes through ```xargs chmod```:
 ```
 git diff --summary | grep  'mode change 100644 => 100755' | cut -d' ' -f7- | xargs -E '\n' chmod -x
 ```
-
 
 # GITHUB
 
