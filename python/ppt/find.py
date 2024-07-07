@@ -11,6 +11,8 @@ options:
   -a, --all             Include hidden files and directories.
   -e EXCLUDE, --exclude EXCLUDE
                         Exclusion regex to prevent recursing into directories which match.
+  -i, --ignore-case     Prepend "(?i)" to your regex for case-insenstive
+                        matching.
 """
 
 import argparse
@@ -51,6 +53,8 @@ def main(options):
     if not os.path.isdir(options.path):
         print('ERROR: %s is not a directory' % options.path())
     else:
+        if options.ignore_case:
+            options.regex[0] = '(?i)' + options.regex[0]
         find(options.path, options.aall, options.regex)
 
         
@@ -70,6 +74,14 @@ if __name__ == '__main__':
         '--exclude',
         dest='exclude',
         help='Exclusion regex to prevent recursing into directories which match.')
+
+    parser.add_argument(
+        '-i',
+        '--ignore-case',
+        dest='ignore_case',
+        help='Prepend "(?i)" to your regex for case-insenstive matching.',
+        action='store_true',
+        default=False)
 
     parser.add_argument(
         'path',
