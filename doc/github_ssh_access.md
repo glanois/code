@@ -5,18 +5,29 @@ your repositories.  Otherwise you will get `Permission denied (publickey)`
 error message when you try to `git push`.
 
 
-The steps are:
-
+Create a new `ssh-rsa` key:
 ```
-cd ~/.ssh
-ls -la
-ssh-keygen -t rsa -C "gerard@lanois.com"
-eval "$(ssh-agent -s)"
-ssh-add ~/.ssh/id_rsa
-cat ~/.ssh/id_rsa
-pbcopy < ~/.ssh/id_rsa.pub 
-(Go paste the key into to your Account Settings, SSH Keys.)
-ssh -T git@github.com
+> cd ~/.ssh
+> ls -la
+> ssh-keygen -t rsa -C "gerard@lanois.com"
+> eval "$(ssh-agent -s)"
+> ssh-add ~/.ssh/id_rsa
+> cat ~/.ssh/id_rsa
+```
+
+Copy it to your clipboard:
+```
+# Linux
+> xclip -selection clipboard < ~/.ssh/id_rsa.pub
+# MacOS X
+> pbcopy < ~/.ssh/id_rsa.pub
+```
+
+Go to your GitHub account->Settings->SSH and GPG Keys->SSH Keys, click the `New SSH key` button, and paste into the `Key` field.
+
+Test the new key:
+```
+> ssh -T git@github.com
 ```
 
 ## References
