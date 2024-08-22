@@ -40,12 +40,12 @@ def find(path, aall, regex):
             dirs[:] = [d for d in dirs if not d[0] == '.']
 
         for f in files:
-            if len(regex) == 0:
+            if regex is None:
                 # No regex specified.  Print every file path.
                 print(os.path.join(root, f))
             else:
                 # Apply regex.
-                if re.search(regex[0], os.path.join(root, f)):
+                if re.search(regex, os.path.join(root, f)):
                     print(os.path.join(root, f))
 
                     
@@ -54,10 +54,9 @@ def main(options):
         print('ERROR: %s is not a directory' % options.path())
     else:
         if options.ignore_case:
-            options.regex[0] = '(?i)' + options.regex[0]
+            options.regex = '(?i)' + options.regex
         find(options.path, options.aall, options.regex)
 
-        
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
@@ -90,7 +89,8 @@ if __name__ == '__main__':
     parser.add_argument(
         'regex',
         help='Optional regular expression to match on.',
-        nargs='*')
+        nargs='?',
+        default=None)
 
     options = parser.parse_args()
 
