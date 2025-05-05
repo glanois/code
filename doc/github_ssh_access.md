@@ -1,4 +1,4 @@
-# SSH Setup
+# GitHub SSH Access
 
 Do this to create your SSH Key before you can access your repositories.  Otherwise you will get `Permission denied (publickey)`
 error message when you try to `git push`.
