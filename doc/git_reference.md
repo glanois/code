@@ -29,6 +29,29 @@ git config --global user.email "you@example.com"
 git config --global user.name "Your Name"
 ```
 
+# SHORTCUTS
+
+| Alias  | Description                                            | Command                                                      |
+| :----- | ------------------------------------------------------ | ------------------------------------------------------------ |
+| `gbsc` | What branch am I currently on?                         | `> git branch --show-current`                                |
+| `gbva` | Verbosely list all local and remote-tracking branches. | `> git branch -v -a`                                         |
+| `gllb` | Concisely list local branches.                         | `> git for-each-ref --format="%(refname:short)" refs/heads`  |
+| `glrb` | List all remote active branches (Windows).             | <code>> git ls-remote --heads origin \| perl -ne "print \"$1\n\" if m\|refs/heads(.*)$\|"</code><br />You'll be warned if you have unmerged local changes; use `-D` instead.<br />You'll be warned if the branch is not fully merged; use `-D` instead. |
+| `glrb` | List all remote active branches (Linux).               | <code>> git ls-remote --heads origin \|perl -ne 'print "$1\n" if m\|refs/heads(.*)$\|'</code> |
+| `gbd`  | Delete a local branch.                                 | <code>> git branch --delete *branchname*</code>              |
+| `gbdr` | Delete remote-tracking branch.                         | <code>> git branch -d -r origin/*branchname*</code>          |
+
+## .bashrc
+
+```
+alias gbva="git branch -v -a"
+alias gbsc="git branch --show-current"
+alias gllb='git for-each-ref --format="%(refname:short)" refs/heads'
+alias glrb='git ls-remote --heads origin |perl -ne '\''print "$1\n" if m|refs/heads(.*)$|'\'''
+alias gbd="git branch --delete"
+alias gbdr="git branch -d -r"
+```
+
 # REPOSITORY
 
 ## Clone a repository (default repo name)
