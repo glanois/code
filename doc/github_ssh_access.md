@@ -1,24 +1,22 @@
-# SSH Setup
+# GitHub SSH Access
 
-Do this to create your SSH Key before you can access
-your repositories.  Otherwise you will get `Permission denied (publickey)`
+Do this to create your SSH Key before you can access your repositories.  Otherwise you will get `Permission denied (publickey)`
 error message when you try to `git push`.
 
 
 Create a new `ssh-rsa` key:
 ```
-> cd ~/.ssh
-> ls -la
-> ssh-keygen -t rsa -C "gerard@lanois.com"
+> ssh-keygen -t ed25519 -C "gerard@lanois.com"
 > eval "$(ssh-agent -s)"
-> ssh-add ~/.ssh/id_rsa
-> cat ~/.ssh/id_rsa
+> ssh-add ~/.ssh/id_ed25519
+> cat ~/.ssh/id_ed25519.pub
 ```
 
 Copy it to your clipboard:
 ```
 # Linux
 > xclip -selection clipboard < ~/.ssh/id_rsa.pub
+
 # MacOS X
 > pbcopy < ~/.ssh/id_rsa.pub
 ```
