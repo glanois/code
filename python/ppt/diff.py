@@ -214,7 +214,7 @@ def main(options):
     return 0
 
 
-if __name__ == '__main__':
+def get_parser():
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
@@ -264,6 +264,11 @@ if __name__ == '__main__':
         help='Names of files or directories to compare.',
         nargs=2)
 
+    return parser
+
+
+if __name__ == '__main__':
+    parser = get_parser()
     options = parser.parse_args()
 
     sys.exit(main(options))

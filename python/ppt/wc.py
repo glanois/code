@@ -103,8 +103,8 @@ def main(options):
     else:
         wordcountfilenames(options)
  
- 
-if __name__ == '__main__':
+
+def get_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '-c',
@@ -144,5 +144,10 @@ if __name__ == '__main__':
         'filenames',
         help='Names of files whose words are to be counted.',
         nargs='*')
+    return parser
+
+
+if __name__ == '__main__':
+    parser = get_parser()
     options = parser.parse_args()
     main(options)
