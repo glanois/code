@@ -27,4 +27,4 @@ jobs:
           pip install -r python/lib/requirements.txt
       - name: Test with unittest
         run: |
-          PYTHONPATH="$PYTHONPATH:./python:./python/tutorials" python -m unittest discover -v -s ./python
+          PYTHONPATH="$PYTHONPATH:./python:./python/ppt:./python/tutorials" python -m unittest discover -v -s ./python

@@ -1,65 +1,72 @@
-# Emacs
-
-| Keystrokes | Command    |
-|---------|---------------|
-| C-x TAB | indent-rigidly
-| M-^     | delete-indentation
-|         | count-matches
-| M-g g   | goto-line
-| C-x r r | copy-rectangle-to-register
-
 # Ack
 
 | Command | Description |
 |---------|-------------|
-| ack --help-types | Examples: --make --cpp --python --cmake
-| ack -g _pattern_ | Find files whose names match _pattern_
-| ack -g _pattern1_ \| ack -x _pattern2_ | Find in files whose names are given in stdin
-| ack "\[^\\x00-\\x7F]" | Find non-ASCII characters
-| ack -g --ignore-ack-defaults --type-set backup:ext:bak --type=backup . | Find .bak files
-| ack -g --ignore-ack-defaults --type-set emacs:match:/~$/ --type=emacs . | Find Emacs backup files
-| ack -g _stuff_ \| xargs rm | Delete stuff ack found
-| ack -l _string1_ \| xargs perl -pi -e 's/_string1_/_string2_/g' | Global search and replace _string1_ with _string2_ (Linux) 
-| ack -l _string1_ \| xargs perl -p -i.bak -e "s/_string1_/_string2_/" | Global search and replace _string1_ with _string2_ (Windows)
-| ack --print0 -l '[ \t]+$' \| xargs -0 -n1 perl -pi -e 's/[ \t]+$//' | Trim trailing whitespace from files (Linux)
-| ack --print0 -l "[ \t]+$" \| xargs -0 -n1 perl -pi.bak -e "s/[ \t]+$//" | Trim trailing whitespace from files (Linux)
+| `ack --help-types` | Examples: `--text` `--make` `--cpp` `--python` `--cmake` |
+| `ack -g` _pattern_ | Find files whose names match _pattern_|
+| `ack -g` _pattern1_ `| ack -x` _pattern2_ | Find in files whose names are given in `stdin` |
+| `ack "[^\x00-\x7F]"` | Find non-ASCII characters|
+| `ack -g --ignore-ack-defaults --type-set backup:ext:bak --type=backup .` | Find `.bak` files |
+| `ack -g --ignore-ack-defaults --type-set emacs:match:/~$/ --type=emacs .` | Find Emacs backup files|
+| `ack -g` _stuff_ `| xargs rm` | Delete stuff `ack` found |
+| `ack -l` _string1_ `| xargs perl -pi -e 's/`_string1_`/`_string2_`/g'` | Global search and replace _string1_ with _string2_ (Linux) |
+| `ack -l` _string1_ `| xargs perl -p -i.bak -e "s/`_string1_`/`_string2_`/"` | Global search and replace _string1_ with _string2_ (Windows)|
+| `ack --print0 -l '[ \t]+$' | xargs -0 -n1 perl -pi -e 's/[ \t]+$//'` | Trim trailing whitespace from files (Linux)|
+| `ack --print0 -l "[ \t]+$" | xargs -0 -n1 perl -pi.bak -e "s/[ \t]+$//"` | Trim trailing whitespace from files (Linux)|
+
+# Emacs
+
+| Keystrokes | Command                    |
+| ---------- | -------------------------- |
+| `C-x TAB`  | indent-rigidly             |
+| `M-^`      | delete-indentation         |
+|            | count-matches              |
+| `M-g g`    | goto-line                  |
+| `C-x r r`  | copy-rectangle-to-register |
+
+# find/grep
+
+| Command                                                  | Description                                                  |
+| -------------------------------------------------------- | ------------------------------------------------------------ |
+| `find . -name "*.txt" -print0 | xargs -0 grep "\bthe\b"` | Approximately equivalent to `ack --type=text "\bthe\b"`<br />***Warning:*** Gnu `grep` regular express syntax differs from the PCRE implementation that `ack` uses. |
+
+# Linux
+
+| Command                                                      | Description                                                  |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| `diff -rq` _dir1_ _dir2_                                     | Recursively compare two directories                          |
+| `tar cvf - ./`_dir_  `| gzip > `_dir_`.tar.gz`               | `tar` and `gzip` directory                                   |
+| `gunzip --stdout _filename_.tar.gz `| tar tvf -`             | `t` - table of contents                                      |
+| `gunzip --stdout` _filename_`.tar.gz | tar xvf -`            | `x` - extract contents                                       |
+| `find . ! -newermt "`_YYYY_-_MM_-_DD_ _HH_:_MM_:_SS_`"`      | Find files whose modification time is newer than _YYYY_-_MM_-_DD_ _HH_:_MM_:_SS_" |
+| `dd if=/dev/random count=1 bs=16 status=none | hexdump -ve '/1 "%04x"'` | Generate 1 block of 16 random bytes and print as hex ASCII   |
+| `cat` _filename_ `| (read -r; printf "%s\n" "$REPLY"; sort -t"," -k2)` | Sort a CSV file by its 2nd column, keeping the header record as the first record |
+| `xdg-open` _filename_or_url_                                 | Opens the file or URL in the preferred application           |
+| `lowriter --headless --convert-to odt *.docx`                | Convert all Microsoft Word files to LibreOffice format       |
+| `ifconfig | grep "inet " | grep -Fv 127.0.0.1 | awk '{print $2}'` | Print IP address                                             |
 
 # Perl
 
 | Command | Description|
 |---------|------------|
-| perl -wnl -e "/_regex_/ and print;" _filename_ | Use \\x22 to represent double quotes in _regex_
-| _something_ \| perl -wnl -e "/_regex_/ and print;" | Search for _regex_ in stdin
+| `perl -wnl -e "/`_regex_`/ and print;"` _filename_ | If you need to search for double quotes, use `\x22` in _regex_ |
+| _something_ `| perl -wnl -e "/`_regex_`/ and print;"` | Search for _regex_ in `stdin` |
 
 # Python
 
 | Command | Description|
 |---------|------------|
-| python -c "import sys; print('\\n'.join(sys.path))"| Print PYTHONPATH
+| `python -c "import sys; print('\\n'.join(sys.path))"` | Print PYTHONPATH|
 
 # Windows
 
 ```xargs``` implementation for Windows:
+
   * https://helloacm.com/simple-xargs-batch-implementation-for-windows/
   * https://github.com/DoctorLai/BatchUtils/blob/master/xargs.cmd
 
 Quick and dirty file find: 
-  * DIR /S /B *.h *.cpp
+  * `DIR /S /B *.h *.cpp`
 
-Add shortcuts to Windows Explorer RMB->Send To context menu:
-  * C:\\Users\_username_\\AppData\\Roaming\\Microsoft\\Windows\\SendTo
-
-# Linux
-
-| Command | Description
-|---------|-------------|
-| diff -rq _dir1_ _dir2_ | Recursively compare two directories
-| tar cvf - ./_dir_ \| gzip > _dir_.tar.gz | tar and gzip directory
-| gunzip --stdout _filename_.tar.gz \| tar tvf - | 't' - table of contents
-| gunzip --stdout _filename_.tar.gz \| tar xvf - | 'x' - extract contents
-| find . ! -newermt "_YYYY_-_MM_-_DD_ _HH_:_MM_:_SS_"| Find files whose modification time is newer than _YYYY_-_MM_-_DD_ _HH_:_MM_:_SS_"
-| dd if=/dev/random count=1 bs=16 status=none \| hexdump -ve '/1 "%04x"'| Generate 1 block of 16 random bytes and print as hex ASCII
-| cat _filename_.csv \| (read -r; printf "%s\n" "$REPLY"; sort -t"," -k2) > _filename_-sorted.csv | Sort a CSV file by its 2nd column, keeping the header record as the first record.
-| xdg-open _filename_or_url_ | Opens the file or URL in the preferred application.
-| lowriter --headless --convert-to odt *.docx | Convert all Microsoft Word files to LibreOffice format.
-| ifconfig \| grep "inet " \| grep -Fv 127.0.0.1 \| awk '{print $2}' | Print IP address.
+Add shortcuts to Windows Explorer `RMB`->`Send To` context menu:
+  * `C:\Users\_username_\AppData\Roaming\Microsoft\Windows\SendTo`
