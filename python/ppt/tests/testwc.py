@@ -86,8 +86,8 @@ class TestWc(unittest.TestCase):
             # Run all options on the file in turn.
             # Can't test the help options (-h, --help) because argparse exits after printing the help.
             fixture = [
-                { 'sw' : '-c',      'val' : 1456 },
-                { 'sw' : '--bytes', 'val' : 1456 },
+                { 'sw' : '-c',      'val' : 1464 },
+                { 'sw' : '--bytes', 'val' : 1464 },
                 { 'sw' : '-m',      'val' : 1456 },
                 { 'sw' : '--chars', 'val' : 1456 },
                 { 'sw' : '-l',      'val' : 25 },
@@ -114,16 +114,16 @@ class TestWc(unittest.TestCase):
             warnings.simplefilter('ignore', ResourceWarning)
 
             # Capture stdout when running.
-            out = io.StringIO()
-            with redirect_stdout(out):
+            io_out = io.StringIO()
+            with redirect_stdout(io_out):
                 parser = ppt.wc.get_parser()
                 options = parser.parse_args([DATA_FILE])
                 ppt.wc.main(options)
                 
             # Compare the results.
-            captured_stdout = out.getvalue()
+            captured_stdout = io_out.getvalue()
             vals_int = [int(v) for v in captured_stdout.split()[0:3]]
-            expected_vals = [25, 302, 1456]
+            expected_vals = [25, 302, 1464]
             self.assertEqual(vals_int, expected_vals) 
 
 
@@ -142,17 +142,19 @@ class TestWc(unittest.TestCase):
             #    TypeError: expected string or bytes-like object, got 'MagicMock'
             #
             # Therefore, this reads the whole file in (frown) and passes that.
+
             with unittest.mock.patch('sys.stdin') as mock_stdin, open(DATA_FILE, 'r', encoding='utf-8') as data_file:
                 data_file_contents = data_file.read()
+
                 mock_stdin.read.return_value = data_file_contents
 
                 # Capture stdout when running.
-                out = io.StringIO()
-                with redirect_stdout(out):
+                io_out = io.StringIO()
+                with redirect_stdout(io_out):
                     ppt.wc.main(options)
                 
                 # Compare the results.
-                captured_stdout = out.getvalue()
+                captured_stdout = io_out.getvalue()
                 vals_int = [int(v) for v in captured_stdout.split()[0:3]]
                 expected_vals = [25, 302, 1456]
                 self.assertEqual(vals_int, expected_vals) 

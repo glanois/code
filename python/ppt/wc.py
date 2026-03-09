@@ -39,10 +39,22 @@ def countrequested(count):
 
 
 def wordcounttext(options, text, filepath):
+    # For stdin (filepath == ''), just use the length of
+    # the incoming text.
+    bytes_count = len(text)
+
+    # For actual files, use the size on disk.
+    if os.path.isfile(filepath):
+        bytes_count = os.stat(filepath).st_size
+
+    # Note that the size on disk will be greater than the
+    # the length of the text when there are unicode characters.
+    # (eg, em dash instead of plain ASCII minus '-')
+
     count = {
         'requests' : {
             'bytes' : {
-                'count'     : os.stat(filepath).st_size,
+                'count'     : bytes_count,
                 'requested' : options.bytes },
             'chars' : {
                 'count'     : len(text),
@@ -66,14 +78,8 @@ def wordcounttext(options, text, filepath):
  
 
 def wordcountfile(options, filepath):
-    try:
-        fin = open(filepath, 'r')
+    with open(filepath, 'r', encoding='utf-8') as fin:
         text = fin.read()
-        fin.close()
-    except IOError:
-        print('Error reading file %s.' % (filepath))
-        raise
-    else:
         return wordcounttext(options, text, filepath) 
 
  
@@ -122,13 +128,13 @@ def printcountsbyfile(count, width):
     # Have to do some work to duplicate the way wc spaces the numbers.
     if countrequested(count) == 1:
         # 1. When only one command line switch count requested, there are no leading spaces.
-        if options.lines:
+        if count['requests']['lines']['requested']:
             print(f"{count['requests']['lines']['count']} {count['filepath']}")
-        elif options.bytes:
+        elif count['requests']['bytes']['requested']:
             print(f"{count['requests']['bytes']['count']} {count['filepath']}")
-        elif options.chars:
+        elif count['requests']['chars']['requested']:
             print(f"{count['requests']['chars']['count']} {count['filepath']}")
-        elif options.words:
+        elif count['requests']['words']['requested']:
             print(f"{count['requests']['words']['count']} {count['filepath']}")
     else:
         # 2. When there are
@@ -162,6 +168,8 @@ def main(options):
             # Process data directly from stdin.
             text = sys.stdin.read()
             count = wordcounttext(options, text, '')
+            width = measurewidth(count)
+            printcountsbyfile(count, width)
     elif len(options.filenames) == 1:
         # Just one file on the command line.
         count = wordcountfile(options, options.filenames[0])
