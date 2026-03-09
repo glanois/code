@@ -63,7 +63,7 @@ def wordcounttext(options, text, filepath):
                 'count'     : text.count('\n'),
                 'requested' : options.lines },
             'words' : {
-                'count'     : len(re.findall(r"[\w']+|[.,!?;]", text)),
+                'count'     : len(re.findall(r'[^\s]+', text)),
                 'requested' : options.words} },
         'filepath' : filepath }
 

@@ -92,8 +92,8 @@ class TestWc(unittest.TestCase):
                 { 'sw' : '--chars', 'val' : 1456 },
                 { 'sw' : '-l',      'val' : 25 },
                 { 'sw' : '--lines', 'val' : 25 },
-                { 'sw' : '-w',      'val' : 302 },
-                { 'sw' : '--words', 'val' : 302 }]
+                { 'sw' : '-w',      'val' : 264 },
+                { 'sw' : '--words', 'val' : 264 }]
                 
             for f in fixture:
                 # Capture stdout when running.
@@ -123,7 +123,7 @@ class TestWc(unittest.TestCase):
             # Compare the results.
             captured_stdout = io_out.getvalue()
             vals_int = [int(v) for v in captured_stdout.split()[0:3]]
-            expected_vals = [25, 302, 1464]
+            expected_vals = [25, 264, 1464]
             self.assertEqual(vals_int, expected_vals) 
 
 
@@ -156,6 +156,6 @@ class TestWc(unittest.TestCase):
                 # Compare the results.
                 captured_stdout = io_out.getvalue()
                 vals_int = [int(v) for v in captured_stdout.split()[0:3]]
-                expected_vals = [25, 302, 1456]
+                expected_vals = [25, 264, 1456]
                 self.assertEqual(vals_int, expected_vals) 
 
