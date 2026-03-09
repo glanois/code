@@ -29,31 +29,43 @@ import argparse
 import re
 import sys
  
+
+def countrequested(count):
+    num_requested = 0
+    for (k, v) in list(count['requests'].items()):
+        if v['requested']:
+            num_requested += 1
+    return num_requested
+
+
 def wordcounttext(options, text, filepath):
     count = {
-        'chars' : 0,
-        'lines' : 0,
-        'words' : 0 }
-    count['chars'] = len(text)
-    count['lines'] = text.count('\n')
-    count['words'] = len(re.findall(r"[\w']+|[.,!?;]", text))
- 
-    if options.bytes or options.chars:
-        print('%7d %s' % (count['chars'], filepath))
-    elif options.lines:
-        print('%7d %s' % (count['lines'], filepath))
-    elif options.words:
-        print('%7d %s' % (count['words'], filepath))
-    else:
-        print('%7d %7d %7d %s' % (count['lines'], count['words'], count['chars'], filepath))
+        'requests' : {
+            'bytes' : {
+                'count'     : os.stat(filepath).st_size,
+                'requested' : options.bytes },
+            'chars' : {
+                'count'     : len(text),
+                'requested' : options.chars },
+            'lines' : {
+                'count'     : text.count('\n'),
+                'requested' : options.lines },
+            'words' : {
+                'count'     : len(re.findall(r"[\w']+|[.,!?;]", text)),
+                'requested' : options.words} },
+        'filepath' : filepath }
+
+    if countrequested(count) == 0:
+        # Nothing explicitly requested.  Therefore, request lines,
+        # words, and bytes.
+        count['requests']['lines']['requested'] = True
+        count['requests']['words']['requested'] = True
+        count['requests']['bytes']['requested'] = True
+
     return count
  
- 
+
 def wordcountfile(options, filepath):
-    count = {
-        'chars' : 0,
-        'lines' : 0,
-        'words' : 0 }
     try:
         fin = open(filepath, 'r')
         text = fin.read()
@@ -62,31 +74,81 @@ def wordcountfile(options, filepath):
         print('Error reading file %s.' % (filepath))
         raise
     else:
-        count = wordcounttext(options, text, filepath)
-    return count
+        return wordcounttext(options, text, filepath) 
+
  
- 
+def measurewidth(count):
+    width = 0
+    # Find the width of the widest requested count.
+    for v in count['requests'].values():
+        if v['requested'] and len(str(v['count'])) > width:
+            width = len(str(v['count']))
+    return width
+
+
 def wordcountfilenames(options):
     total = {
-        'chars' : 0,
-        'lines' : 0,
-        'words' : 0 }
+        'bytes' : {
+            'count'     : 0,
+            'requested' : False },
+        'chars' : {
+            'count'     : 0,
+            'requested' : False },
+        'lines' : {
+            'count'     : 0,
+            'requested' : False },
+        'words' : {
+            'count'     : 0,
+            'requested' : False } }
+
+    # Find the width of the widest requested count.
+    widths = []
+    counts = []
+    for filepath in options.filenames:
+        count = wordcountfile(options, filepath)
+        width = measurewidth(count)
+        counts.append(count)
+        widths.append(width)
+        for k in count['requests'].keys():
+            if count['requests'][k]['requested']:
+                total[k]['count']     = total[k]['count'] + count['requests'][k]['count']
+                total[k]['requested'] = count['requests'][k]['requested']
+
+    return counts, widths, total
+
  
-    for path in options.filenames:
-        count = wordcountfile(options, path)
-        total = {k: total[k] + v for (k, v) in list(count.items())}
- 
-    if len(options.filenames) > 1:
-        if options.bytes or options.chars:
-            print('%7d %s' % (total['chars'], 'total'))
-        elif options.lines:
-            print('%7d %s' % (total['lines'], 'total'))
+def printcountsbyfile(count, width):
+
+    # Have to do some work to duplicate the way wc spaces the numbers.
+    if countrequested(count) == 1:
+        # 1. When only one command line switch count requested, there are no leading spaces.
+        if options.lines:
+            print(f"{count['requests']['lines']['count']} {count['filepath']}")
+        elif options.bytes:
+            print(f"{count['requests']['bytes']['count']} {count['filepath']}")
+        elif options.chars:
+            print(f"{count['requests']['chars']['count']} {count['filepath']}")
         elif options.words:
-            print('%7d %s' % (total['words'], 'total'))
-        else:
-            print('%7d %7d %7d %s' % (total['lines'], total['words'], total['chars'], 'total'))
- 
- 
+            print(f"{count['requests']['words']['count']} {count['filepath']}")
+    else:
+        # 2. When there are
+        #     a) no requested values (which means print all counts), or
+        #     b) more than one requested value,
+        #
+        #    wc uses the width of the widest requested number
+        #    (plus one space between as a separator), and always
+        #    prints them in this order: lines, words, characters, bytes.
+
+        # Assemble them in the specific order: lines, words, characters, bytes.
+        counts = []
+        for c in ('lines', 'words', 'chars', 'bytes'):
+            if count['requests'][c]['requested']:
+                counts.append(f"{count['requests'][c]['count']:>{width}}")
+
+        # Print it out.
+        print(f"{' '.join(counts)} {count['filepath']}")
+
+
 def main(options):
     if len(options.filenames) == 0:
         # No filenames given on the command line.
@@ -95,14 +157,29 @@ def main(options):
             filenames = sys.stdin.read()
             # Split on NUL and throw away last one due to last NUL terminator.
             options.filenames = filenames.split('\x00')[:-1]
-            wordcountfilenames(options)
+            counts, widths, total = wordcountfilenames(options)
         else:
             # Process data directly from stdin.
             text = sys.stdin.read()
-            wordcounttext(options, text, '')
+            count = wordcounttext(options, text, '')
+    elif len(options.filenames) == 1:
+        # Just one file on the command line.
+        count = wordcountfile(options, options.filenames[0])
+        width = measurewidth(count)
+        printcountsbyfile(count, width)
     else:
-        wordcountfilenames(options)
- 
+        # Multiple files.
+        counts, widths, total = wordcountfilenames(options)
+        for count in counts:
+            printcountsbyfile(count, max(widths))
+
+        totals = []
+        for c in ('lines', 'words', 'chars', 'bytes'):
+            if total[c]['requested']:
+                totals.append(f"{total[c]['count']:>{max(widths)}}")
+
+        print(f"{' '.join(totals)} total")
+
 
 def get_parser():
     parser = argparse.ArgumentParser()
