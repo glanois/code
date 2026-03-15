@@ -30,7 +30,7 @@ import re
 import sys
  
 
-def countrequested(count):
+def count_requested(count):
     num_requested = 0
     for (k, v) in list(count['requests'].items()):
         if v['requested']:
@@ -38,7 +38,7 @@ def countrequested(count):
     return num_requested
 
 
-def wordcounttext(options, text, filepath):
+def word_count_text(options, text, filepath):
     # For stdin (filepath == ''), just use the length of
     # the incoming text.
     bytes_count = len(text)
@@ -67,7 +67,7 @@ def wordcounttext(options, text, filepath):
                 'requested' : options.words} },
         'filepath' : filepath }
 
-    if countrequested(count) == 0:
+    if count_requested(count) == 0:
         # Nothing explicitly requested.  Therefore, request lines,
         # words, and bytes.
         count['requests']['lines']['requested'] = True
@@ -77,13 +77,13 @@ def wordcounttext(options, text, filepath):
     return count
  
 
-def wordcountfile(options, filepath):
+def word_count_file(options, filepath):
     with open(filepath, 'r', encoding='utf-8') as fin:
         text = fin.read()
-        return wordcounttext(options, text, filepath) 
+        return word_count_text(options, text, filepath) 
 
  
-def measurewidth(count):
+def measure_width(count):
     width = 0
     # Find the width of the widest requested count.
     for v in count['requests'].values():
@@ -92,7 +92,7 @@ def measurewidth(count):
     return width
 
 
-def wordcountfilenames(options):
+def word_count_filenames(options):
     total = {
         'bytes' : {
             'count'     : 0,
@@ -111,8 +111,8 @@ def wordcountfilenames(options):
     widths = []
     counts = []
     for filepath in options.filenames:
-        count = wordcountfile(options, filepath)
-        width = measurewidth(count)
+        count = word_count_file(options, filepath)
+        width = measure_width(count)
         counts.append(count)
         widths.append(width)
         for k in count['requests'].keys():
@@ -123,10 +123,10 @@ def wordcountfilenames(options):
     return counts, widths, total
 
  
-def printcountsbyfile(count, width):
+def print_counts_by_file(count, width):
 
     # Have to do some work to duplicate the way wc spaces the numbers.
-    if countrequested(count) == 1:
+    if count_requested(count) == 1:
         # 1. When only one command line switch count requested, there are no leading spaces.
         if count['requests']['lines']['requested']:
             print(f"{count['requests']['lines']['count']} {count['filepath']}")
@@ -163,23 +163,23 @@ def main(options):
             filenames = sys.stdin.read()
             # Split on NUL and throw away last one due to last NUL terminator.
             options.filenames = filenames.split('\x00')[:-1]
-            counts, widths, total = wordcountfilenames(options)
+            counts, widths, total = word_count_filenames(options)
         else:
             # Process data directly from stdin.
             text = sys.stdin.read()
-            count = wordcounttext(options, text, '')
-            width = measurewidth(count)
-            printcountsbyfile(count, width)
+            count = word_count_text(options, text, '')
+            width = measure_width(count)
+            print_counts_by_file(count, width)
     elif len(options.filenames) == 1:
         # Just one file on the command line.
-        count = wordcountfile(options, options.filenames[0])
-        width = measurewidth(count)
-        printcountsbyfile(count, width)
+        count = word_count_file(options, options.filenames[0])
+        width = measure_width(count)
+        print_counts_by_file(count, width)
     else:
         # Multiple files.
-        counts, widths, total = wordcountfilenames(options)
+        counts, widths, total = word_count_filenames(options)
         for count in counts:
-            printcountsbyfile(count, max(widths))
+            print_counts_by_file(count, max(widths))
 
         totals = []
         for c in ('lines', 'words', 'chars', 'bytes'):
