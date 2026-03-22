@@ -110,7 +110,7 @@ def main(options):
 
 def get_parser():
     parser = argparse.ArgumentParser(
-        description="Prints an ASCII table similar to \"man ascii\"")
+        description="Prints an ASCII table similar to \"man ascii\".")
     parser.add_argument(
         '-l',
         '--long',
