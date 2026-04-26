@@ -7,15 +7,15 @@ def pp(f, sort):
     j = json.load(f)
     print(json.dumps(j, sort_keys=sort, indent=4, separators=(',', ': ')))
 
-def main(options):
-    if not options.filename:
+def main(args):
+    if not args.filename:
         # No filename given on the command line.
         # Process data directly from stdin.
-        pp(sys.stdin, options.sort)
+        pp(sys.stdin, args.sort)
     else:
         # Read from the file.
-        with open(options.filename, 'r') as f:
-            pp(f, options.sort)
+        with open(args.filename, 'r') as f:
+            pp(f, args.sort)
     return 0
         
 if __name__ == '__main__':
@@ -31,5 +31,5 @@ if __name__ == '__main__':
         'filename',
         help='Name of file to read.',
         nargs='?')
-    options = parser.parse_args()
-    sys.exit(main(options))
+    args = parser.parse_args()
+    sys.exit(main(args))

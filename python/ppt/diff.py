@@ -1,3 +1,29 @@
+r"""
+usage: diff.py [-h] [-i INCLUDE] [-e EXCLUDE] [-s SUBDIR] [-b] [-r] [-q] arg arg
+
+Produces differences in the POSIX default format (see http://www.unix.com/man-page/POSIX/1posix/diff/), which is the same as
+the Gnu diff "normal format" (see http://www.gnu.org/software/diffutils/manual/diffutils.html#Normal).
+
+This program is based on Python's difflib sample program, Tools/Scripts/diff.py.        
+        
+
+positional arguments:
+  arg                   Names of files or directories to compare.
+
+options:
+  -h, --help            show this help message and exit
+  -i INCLUDE, --include INCLUDE
+                        Inclusion regex to apply to file path when performing recursive directory comparisons.
+  -e EXCLUDE, --exclude EXCLUDE
+                        Exclusion regex to apply to file path when performing recursive directory comparisons.
+  -s SUBDIR, --subdir SUBDIR
+                        Subdirectory exlusion regex to apply to subdirectory names when performing recursive directory
+                        comparisons.
+  -b, --binary          Compare and report on binary files.
+  -r, --recursive       Recursively compare subdirectories.
+  -q, --brief           When performing recursive directory comparisons, only report when files are different.
+"""
+
 import argparse
 import sys
 import filecmp
@@ -83,16 +109,16 @@ def compare_text_files(file1, file2):
     return pdiff(file1content, file2content)
 
 
-def compare_directories(options, dir1, dir2):
+def compare_directories(args, dir1, dir2):
     dc = filecmp.dircmp(dir1, dir2)
 
     incre = None
-    if options.include:
-        incre = re.compile(options.include)
+    if args.include:
+        incre = re.compile(args.include)
 
     excre = None
-    if options.exclude:
-        excre = re.compile(options.exclude)
+    if args.exclude:
+        excre = re.compile(args.exclude)
 
     # Apply inclusion/exclusion to "only in" files too.
     # Only print the header if there is at least one file that passes
@@ -150,7 +176,7 @@ def compare_directories(options, dir1, dir2):
             printed_title = False
             try:
                 for difference in compare_text_files(file1, file2):
-                    if options.brief:
+                    if args.brief:
                         # Found a difference.  Report it.  No need to continue.
                         print('%s %s : files are different' % (file1, file2))
                         break
@@ -165,13 +191,13 @@ def compare_directories(options, dir1, dir2):
                     sys.stdout.writelines(difference)
             except UnicodeDecodeError:
                 # Binary file.
-                if options.binary and not compare_binary_files(file1, file2):
+                if args.binary and not compare_binary_files(file1, file2):
                     print('%s %s : binary files are different' % (file1, file2))
 
     # Descend down the tree into common directories.
     subre = None
-    if options.subdir:
-        subre = re.compile(options.subdir)
+    if args.subdir:
+        subre = re.compile(args.subdir)
     for common_dir in dc.common_dirs:
         # Skip this subdirectory if subdirectory filter is in effect and
         # subdirectory matches.  Notice the fullmatch() here, not search().
@@ -179,12 +205,12 @@ def compare_directories(options, dir1, dir2):
             continue
 
         compare_directories(
-            options,
+            args,
             os.path.join(dc.left,  common_dir),
             os.path.join(dc.right, common_dir))
 
 
-def main(options):
+def main(args):
     """
     This program is based on Python's difflib sample program, Tools/Scripts/diff.py.
 
@@ -193,13 +219,13 @@ def main(options):
     See http://www.unix.com/man-page/POSIX/1posix/diff/
     """
 
-    if not options.recursive:
-        file1 = options.arg[0]
+    if not args.recursive:
+        file1 = args.arg[0]
         if not os.path.isfile(file1):
             print('ERROR: %s is not a file' % (file1))
             return 1
 
-        file2 = options.arg[1]
+        file2 = args.arg[1]
         if not os.path.isfile(file2):
             print('ERROR: %s is not a file' % (file2))
             return 1
@@ -207,15 +233,23 @@ def main(options):
         try:
             sys.stdout.writelines(compare_text_files(file1, file2))
         except UnicodeDecodeError:
-            if options.binary and not compare_binary_files(file1, file2):
+            if args.binary and not compare_binary_files(file1, file2):
                 print('%s %s : binary files are different' % (file1, file2))
     else:
-        compare_directories(options, options.arg[0], options.arg[1])
+        compare_directories(args, args.arg[0], args.arg[1])
     return 0
 
 
 def get_parser():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        description="""Produces differences in the POSIX default format 
+(see http://www.unix.com/man-page/POSIX/1posix/diff/),
+which is the same as the Gnu diff "normal format"
+(see http://www.gnu.org/software/diffutils/manual/diffutils.html#Normal).
+
+This program is based on Python's difflib sample program, Tools/Scripts/diff.py.        
+        """,
+        formatter_class=argparse.RawDescriptionHelpFormatter)
 
     parser.add_argument(
         '-i',
@@ -269,7 +303,7 @@ def get_parser():
 
 if __name__ == '__main__':
     parser = get_parser()
-    options = parser.parse_args()
+    args = parser.parse_args()
 
-    sys.exit(main(options))
+    sys.exit(main(args))
 

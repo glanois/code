@@ -278,19 +278,19 @@ class HeartbeatId(HeartbeatApplication):
         return msg.encode('utf-8')
 
 
-def main(options):
+def main(args):
     appid = uuid.uuid4()
     logging.info('**********************************************************************')
     logging.info('appid = %s' % (appid))
     logging.info('**********************************************************************')
 
-    mp = MarcoPolo(options.server[0], options.port[0], options.topic[0], appid)
+    mp = MarcoPolo(args.server[0], args.port[0], args.topic[0], appid)
     mp.start()
 
-    pp = PingPong(options.server[0], options.port[0], options.topic[0], appid)
+    pp = PingPong(args.server[0], args.port[0], args.topic[0], appid)
     pp.start()
 
-    hb = HeartbeatId(options.server[0], options.port[0], options.topic[0], 3, appid)
+    hb = HeartbeatId(args.server[0], args.port[0], args.topic[0], 3, appid)
     hb.start()
 
     while not mp.stopped() or not pp.stopped():
@@ -330,5 +330,5 @@ if __name__ == '__main__':
         help='Topic to participate in.',
         nargs=1)
 
-    options = parser.parse_args()
-    sys.exit(main(options))
+    args = parser.parse_args()
+    sys.exit(main(args))

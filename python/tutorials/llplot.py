@@ -7,10 +7,10 @@ import matplotlib.pyplot
 # pip3 install --user https://github.com/matplotlib/basemap/archive/master.zip
 import mpl_toolkits.basemap
 
-def main(options):
+def main(args):
     lon = []
     lat = []
-    with open(options.points) as pf:
+    with open(args.points) as pf:
         reader = csv.DictReader(pf, delimiter=',')
         for row in reader:
             lon.append(float(row['longitude']))
@@ -18,8 +18,8 @@ def main(options):
 
     # Minimum default margin.
     margin = max([max(lat) - min(lat), max(lon) - min(lon)])        
-    if options.margin:
-        margin = options.margin
+    if args.margin:
+        margin = args.margin
     lat_min = min(lat) - margin
     lat_max = max(lat) + margin
     lon_min = min(lon) - margin
@@ -50,6 +50,7 @@ def main(options):
     m.scatter(lons, lats, marker = '.', color='r', zorder=5)
     matplotlib.pyplot.show()
 
+    return 0
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -62,5 +63,5 @@ if __name__ == '__main__':
     parser.add_argument(
         'points',
         help='CSV file of points to plot.  Should have columns \'latitude\' and \'longitude\` (column order unimportant).')
-    options = parser.parse_args()
-    sys.exit(main(options))
+    args = parser.parse_args()
+    sys.exit(main(args))

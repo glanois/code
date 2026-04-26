@@ -9,9 +9,9 @@ import argparse
 
 import lib.network
 
-def main(options):
+def main(args):
     u = lib.network.UdpSender()
-    u.sendto(options.address[0], int(options.port[0]), options.message[0])
+    u.sendto(args.address[0], int(args.port[0]), args.message[0])
     return 0
 
 
@@ -33,6 +33,6 @@ if __name__ == '__main__':
         help='Message to send (use double quotes to contain whitespace).',
         nargs=1)
 
-    options = parser.parse_args()
-    sys.exit(main(options))
+    args = parser.parse_args()
+    sys.exit(main(args))
 

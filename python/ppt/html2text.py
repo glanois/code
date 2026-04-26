@@ -1,13 +1,17 @@
-""" html2text - Display a web page or HTML file as text
+r"""
+usage: html2text.py [-h] [-f] source
 
-Synopsis:
+Display a web page or HTML file as text.
 
-    html2text.py [-f] source
+positional arguments:
+  source      Source URL or filename (use -f for file).
 
-Description:
+options:
+  -h, --help  show this help message and exit
+  -f, --file  Read input from this file.
 
-    html2text displays a web page or HTML file as text.
 
+NOTES:
     The argument is the URL of a web page to retrieve, or
     if you use the -f option, the name of an HTML file.
 
@@ -20,14 +24,14 @@ import urllib
 from bs4 import BeautifulSoup
 import textwrap
 
-def main(options):
+def main(args):
     # Get HTML page or file.
     html = ''
-    if options.file:
-        with open(options.source[0], 'r') as myfile:
+    if args.file:
+        with open(args.source[0], 'r') as myfile:
             html = myfile.read()
     else:
-        html = urllib.urlopen(options.source[0]).read()
+        html = urllib.urlopen(args.source[0]).read()
 
     # Filter out non-utf-8 characters in web pages which advertise utf-8
     # but then provide characters outside of utf-8.  
@@ -55,13 +59,13 @@ def main(options):
     # Pretty print it.
     for chunk in chunks:
         if chunk:
-            print '%s\n' % ('\n'.join(textwrap.wrap(chunk)))
+            [print(x) for x in '\n'.join(textwrap.wrap(chunk))]
 
     return 0
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description='Display a web page or HTML file as text.')
     parser.add_argument(
         '-f',
         '--file',
@@ -73,5 +77,5 @@ if __name__ == '__main__':
         'source',
         help='Source URL or filename (use -f for file).',
         nargs=1)
-    options = parser.parse_args()
-    sys.exit(main(options))
+    args = parser.parse_args()
+    sys.exit(main(args))

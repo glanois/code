@@ -1,9 +1,15 @@
-""" touch.py
+r"""
+usage: touch.py [-h] path [path ...]
 
-    DESCRIPTION
-        Update file access/modification time.
+Update file access/modification time.
 
-    SEE ALSO:
+positional arguments:
+  path        Path(s) of file(s) to be touched.
+
+options:
+  -h, --help  show this help message and exit
+
+SEE ALSO:
         https://man7.org/linux/man-pages/man1/touch.1.html
 """
 import argparse
@@ -30,15 +36,19 @@ def touch(paths):
             _mkdir(p)
             _utime(p)
 
-def main(options):
-    touch(options.path)
+def main(args):
+    touch(args.path)
     return 0
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        description='Update file access/modification time.',
+        epilog="""SEE ALSO:
+        https://man7.org/linux/man-pages/man1/touch.1.html""",
+        formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument(
         'path',
         help='Path(s) of file(s) to be touched.',
         nargs='+')
-    options = parser.parse_args()
-    sys.exit(main(options))
+    args = parser.parse_args()
+    sys.exit(main(args))

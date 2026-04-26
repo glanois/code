@@ -26,13 +26,13 @@ import os
 import sys
 
 
-def main(options):
+def main(args):
     # Return 0 on success, 1 if an error occurs.
     result = 0
-    if not options.name:
+    if not args.name:
         print('\n'.join([ '%s=%s' % (k, v) for (k, v) in os.environ.items() ]))
     else:
-        name = options.name[0]
+        name = args.name[0]
         if name not in os.environ:
             result = 1
         else:
@@ -47,5 +47,5 @@ if __name__ == '__main__':
         'name',
         help='Print the value of the specified environment variable.',
         nargs='*')
-    options = parser.parse_args()
-    sys.exit(main(options))
+    args = parser.parse_args()
+    sys.exit(main(args))
