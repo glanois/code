@@ -12,13 +12,13 @@ import argparse
 import sys
 import html
 
-def main(options):
+def main(args):
     result = 0
     try:
-        with open(options.filename, 'r') as f:
+        with open(args.filename, 'r') as f:
             lines = f.readlines()
     except FileNotFoundError:
-        print(f"File '{options.filename}' not found.")
+        print(f"File '{args.filename}' not found.")
         resulte = 1
     else:
         # Start HTML output
@@ -63,6 +63,6 @@ if __name__ == '__main__':
         help='Name of file.',
         nargs='?')
 
-    options = parser.parse_args()
+    args = parser.parse_args()
 
-    sys.exit(main(options))
+    sys.exit(main(args))

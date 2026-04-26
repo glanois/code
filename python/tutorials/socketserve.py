@@ -36,16 +36,16 @@ class PingPongServer(socketserver.TCPServer):
         logger.debug('__init__()')
 
 
-def main(options):
+def main(args):
     logging.basicConfig(
         level=logging.DEBUG,
         format='%(asctime)s %(name)s %(levelname)s - %(message)s',
         datefmt='%Y-%m-%d %H:%M:%S')
 
     logger = logging.getLogger('main()')
-    logger.info('Starting up PingPongSever at %s:%d' % (options.address[0], int(options.port[0])))
+    logger.info('Starting up PingPongSever at %s:%d' % (args.address[0], int(args.port[0])))
     
-    server_address = (options.address[0], int(options.port[0]))
+    server_address = (args.address[0], int(args.port[0]))
     with PingPongServer(server_address, Handler) as server:
         server.serve_forever()
         logger.info('Returned from PingPongServer.serve_forever()')
@@ -65,6 +65,6 @@ if __name__ == '__main__':
         help='Port number of the socket.',
         nargs=1)
 
-    options = parser.parse_args()
-    sys.exit(main(options))
+    args = parser.parse_args()
+    sys.exit(main(args))
 

@@ -1,6 +1,15 @@
-""" xv.py - Display an image.
+r""" 
+usage: xv.py [-h] filename
 
-Notes:
+A simple image viewer and a tribute to the original xv image display editing program for the X Window System.
+
+positional arguments:
+  filename    Image file to display.
+
+options:
+  -h, --help  show this help message and exit
+
+NOTES:
     sudo apt-get install python3-pip
     sudo pip3 install pillow
     sudo apt-get install python3-pil.imagetk
@@ -53,16 +62,16 @@ class ImageDisplay(Window):
             label.pack(side='bottom', fill='both', expand='yes')
 
 
-def main(options):
-    image_display = ImageDisplay(options.filename)
+def main(args):
+    image_display = ImageDisplay(args.filename)
     image_display.mainloop()
     return 0
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description='A simple image viewer and a tribute to the original xv image display editing program for the X Window System.')
     parser.add_argument(
         'filename',
-        help='Display an image.')
+        help='Image file to display.')
 
-    options = parser.parse_args()
-    sys.exit(main(options))
+    args = parser.parse_args()
+    sys.exit(main(args))

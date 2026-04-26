@@ -1,17 +1,17 @@
-""" cal - display a calendar
+r"""
+usage: cal.py [-h] [year ...]
 
-Synopsis:
-
-    cal.py [year]
-
-Description:
-
-    cal displays a simple calendar.
+    Displays a simple calendar.
 
     With no argument, displays the calendar for the month of the current year.
 
     With argument, displays the calendar for the specified year.
 
+positional arguments:
+  year        Display a calendar for this year.
+
+options:
+  -h, --help  show this help message and exit
 """
 
 import argparse
@@ -20,24 +20,30 @@ import calendar
 import datetime
 
 
-def main(options):
+def main(args):
     
     cal = calendar.TextCalendar(calendar.SUNDAY)
-    if not options.year:
+    if not args.year:
         now = datetime.datetime.now()
         cal.prmonth(now.year, now.month)
     else:
-        cal.pryear(int(options.year[0]))
+        cal.pryear(int(args.year[0]))
     return 0
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        description="""    Displays a simple calendar.
+
+    With no argument, displays the calendar for the month of the current year.
+
+    With argument, displays the calendar for the specified year.""",
+    formatter_class=argparse.RawDescriptionHelpFormatter)
 
     parser.add_argument(
         'year',
-        help='Display a calendar for the specified year.',
+        help='Display a calendar for this year.',
         nargs='*')
-    options = parser.parse_args()
-    sys.exit(main(options))
+    args = parser.parse_args()
+    sys.exit(main(args))
 

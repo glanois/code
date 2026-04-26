@@ -48,8 +48,8 @@ def get_logger(prefix, path):
     logger.addHandler(file_handler)
     return logger
 
-def main(options):
-    logger = get_logger('logging_example2', options.path[0])
+def main(args):
+    logger = get_logger('logging_example2', args.path[0])
 
     # Now log some messages:
     logger.info('logging_example.py')
@@ -69,6 +69,6 @@ if __name__ == '__main__':
         nargs='*', # We will only use the first one.
         default='.')
 
-    options = parser.parse_args()
+    args = parser.parse_args()
 
-    sys.exit(main(options))
+    sys.exit(main(args))

@@ -9,9 +9,9 @@ import argparse
 
 import lib.network
 
-def main(options):
+def main(args):
     u = lib.network.UdpReceiver()
-    u.bind(options.address[0], int(options.port[0]))
+    u.bind(args.address[0], int(args.port[0]))
     data, address = u.recvfrom(1024)
     print(data.decode('ascii').rstrip())
     return 0
@@ -30,6 +30,6 @@ if __name__ == '__main__':
         help='Port of the UDP endpoint to receive from.',
         nargs=1)
 
-    options = parser.parse_args()
-    sys.exit(main(options))
+    args = parser.parse_args()
+    sys.exit(main(args))
 

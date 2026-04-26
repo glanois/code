@@ -100,8 +100,8 @@ class TestWc(unittest.TestCase):
                 io_out = io.StringIO()
                 with redirect_stdout(io_out):
                     parser = ppt.wc.get_parser()
-                    options = parser.parse_args([f['sw'], DATA_FILE])
-                    ppt.wc.main(options)
+                    args = parser.parse_args([f['sw'], DATA_FILE])
+                    ppt.wc.main(args)
 
                 # Parse the result and compare to expected value.
                 captured_stdout = io_out.getvalue()
@@ -117,8 +117,8 @@ class TestWc(unittest.TestCase):
             io_out = io.StringIO()
             with redirect_stdout(io_out):
                 parser = ppt.wc.get_parser()
-                options = parser.parse_args([DATA_FILE])
-                ppt.wc.main(options)
+                args = parser.parse_args([DATA_FILE])
+                ppt.wc.main(args)
                 
             # Compare the results.
             captured_stdout = io_out.getvalue()
@@ -131,7 +131,7 @@ class TestWc(unittest.TestCase):
         with warnings.catch_warnings():
             warnings.simplefilter('ignore', ResourceWarning)
             parser = ppt.wc.get_parser()
-            options = parser.parse_args([])
+            args = parser.parse_args([])
 
             # Feed the file in via stdin.
             # Unfortunately, passing the file handle doesn't work.
@@ -151,7 +151,7 @@ class TestWc(unittest.TestCase):
                 # Capture stdout when running.
                 io_out = io.StringIO()
                 with redirect_stdout(io_out):
-                    ppt.wc.main(options)
+                    ppt.wc.main(args)
                 
                 # Compare the results.
                 captured_stdout = io_out.getvalue()

@@ -40,13 +40,13 @@ def print_tags(album, debug, path):
                 audiofile.tag.title))
 
 
-def main(options):
+def main(args):
     result = 0
-    if not os.path.isfile(options.path):
-        print('ERROR: %s is not a file.' % options.path())
+    if not os.path.isfile(args.path):
+        print('ERROR: %s is not a file.' % args.path())
         result = 1
     else:
-        print_tags(options.album, options.debug, options.path)
+        print_tags(args.album, args.debug, args.path)
     return result
 
 
@@ -73,6 +73,6 @@ if __name__ == '__main__':
         'path',
         help='Path to MP3 file.')
 
-    options = parser.parse_args()
+    args = parser.parse_args()
 
-    sys.exit(main(options))
+    sys.exit(main(args))

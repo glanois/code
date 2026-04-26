@@ -8,14 +8,14 @@ def pp(f):
     xml.etree.ElementTree.indent(ndm)
     print(xml.etree.ElementTree.tostring(ndm, encoding='unicode'))
 
-def main(options):
-    if not options.filename:
+def main(args):
+    if not args.filename:
         # No filename given on the command line.
         # Process data directly from stdin.
         pp(sys.stdin)
     else:
         # Read from the file.
-        with open(options.filename, 'r') as f:
+        with open(args.filename, 'r') as f:
             pp(f)
     return 0
         
@@ -25,5 +25,5 @@ if __name__ == '__main__':
         'filename',
         help='Name of file to read.',
         nargs='?')
-    options = parser.parse_args()
-    sys.exit(main(options))
+    args = parser.parse_args()
+    sys.exit(main(args))

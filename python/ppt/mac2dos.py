@@ -13,12 +13,12 @@ import argparse
 import sys
 import re
 
-def main(options):
-    with open(options.filepath, 'rb') as fin:
+def main(args):
+    with open(args.filepath, 'rb') as fin:
         data = fin.read()
     newdata = re.sub(b'\r', b'\r\n', data)
     if newdata != data:
-        with open(options.filepath, 'wb') as fout:
+        with open(args.filepath, 'wb') as fout:
             fout.write(newdata)
     return 0
 
@@ -27,5 +27,5 @@ if __name__ == '__main__':
     parser.add_argument(
         'filepath',
         help='Path to file to convert.')
-    options = parser.parse_args()
-    sys.exit(main(options))
+    args = parser.parse_args()
+    sys.exit(main(args))

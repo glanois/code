@@ -3,7 +3,7 @@
 To run the unit manually tests from the command line:
 
 ```
-$ cd code\python
+$ cd code/python
 $ python -m unittest discover -v -s ./lib/tests
 ```
 

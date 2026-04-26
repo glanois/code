@@ -38,7 +38,7 @@ def count_requested(count):
     return num_requested
 
 
-def word_count_text(options, text, filepath):
+def word_count_text(args, text, filepath):
     # For stdin (filepath == ''), just use the length of
     # the incoming text.
     bytes_count = len(text)
@@ -55,16 +55,16 @@ def word_count_text(options, text, filepath):
         'requests' : {
             'bytes' : {
                 'count'     : bytes_count,
-                'requested' : options.bytes },
+                'requested' : args.bytes },
             'chars' : {
                 'count'     : len(text),
-                'requested' : options.chars },
+                'requested' : args.chars },
             'lines' : {
                 'count'     : text.count('\n'),
-                'requested' : options.lines },
+                'requested' : args.lines },
             'words' : {
                 'count'     : len(re.findall(r'[^\s]+', text)),
-                'requested' : options.words} },
+                'requested' : args.words} },
         'filepath' : filepath }
 
     if count_requested(count) == 0:
@@ -77,10 +77,10 @@ def word_count_text(options, text, filepath):
     return count
  
 
-def word_count_file(options, filepath):
+def word_count_file(args, filepath):
     with open(filepath, 'r', encoding='utf-8') as fin:
         text = fin.read()
-        return word_count_text(options, text, filepath) 
+        return word_count_text(args, text, filepath) 
 
  
 def measure_width(count):
@@ -92,7 +92,7 @@ def measure_width(count):
     return width
 
 
-def word_count_filenames(options):
+def word_count_filenames(args):
     total = {
         'bytes' : {
             'count'     : 0,
@@ -110,8 +110,8 @@ def word_count_filenames(options):
     # Find the width of the widest requested count.
     widths = []
     counts = []
-    for filepath in options.filenames:
-        count = word_count_file(options, filepath)
+    for filepath in args.filenames:
+        count = word_count_file(args, filepath)
         width = measure_width(count)
         counts.append(count)
         widths.append(width)
@@ -155,29 +155,29 @@ def print_counts_by_file(count, width):
         print(f"{' '.join(counts)} {count['filepath']}")
 
 
-def main(options):
-    if len(options.filenames) == 0:
+def main(args):
+    if len(args.filenames) == 0:
         # No filenames given on the command line.
-        if options.files0:
+        if args.files0:
             # Read NUL-terminated input filenames from stdin.
             filenames = sys.stdin.read()
             # Split on NUL and throw away last one due to last NUL terminator.
-            options.filenames = filenames.split('\x00')[:-1]
-            counts, widths, total = word_count_filenames(options)
+            args.filenames = filenames.split('\x00')[:-1]
+            counts, widths, total = word_count_filenames(args)
         else:
             # Process data directly from stdin.
             text = sys.stdin.read()
-            count = word_count_text(options, text, '')
+            count = word_count_text(args, text, '')
             width = measure_width(count)
             print_counts_by_file(count, width)
-    elif len(options.filenames) == 1:
+    elif len(args.filenames) == 1:
         # Just one file on the command line.
-        count = word_count_file(options, options.filenames[0])
+        count = word_count_file(args, args.filenames[0])
         width = measure_width(count)
         print_counts_by_file(count, width)
     else:
         # Multiple files.
-        counts, widths, total = word_count_filenames(options)
+        counts, widths, total = word_count_filenames(args)
         for count in counts:
             print_counts_by_file(count, max(widths))
 
@@ -187,6 +187,7 @@ def main(options):
                 totals.append(f"{total[c]['count']:>{max(widths)}}")
 
         print(f"{' '.join(totals)} total")
+    return 0
 
 
 def get_parser():
@@ -234,5 +235,6 @@ def get_parser():
 
 if __name__ == '__main__':
     parser = get_parser()
-    options = parser.parse_args()
-    main(options)
+    args = parser.parse_args()
+    sys.exit(main(args))
+

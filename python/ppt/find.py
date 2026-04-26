@@ -1,4 +1,4 @@
-""" find - Find files recursively and optionally filter with regular expression.
+r""" find - Find files recursively and optionally filter with regular expression.
 
 usage: find.py [-h] [-a] [-e EXCLUDE] path [regex ...]
 
@@ -24,8 +24,8 @@ import re
 def find(path, aall, regex):
     # Exclusion regular expression.
     excre = None
-    if options.exclude:
-        excre = re.compile(options.exclude)
+    if args.exclude:
+        excre = re.compile(args.exclude)
 
     for root, dirs, files in os.walk(path):
         if excre is not None:
@@ -49,13 +49,13 @@ def find(path, aall, regex):
                     print(os.path.join(root, f))
 
                     
-def main(options):
-    if not os.path.isdir(options.path):
-        print('ERROR: %s is not a directory' % options.path())
+def main(args):
+    if not os.path.isdir(args.path):
+        print('ERROR: %s is not a directory' % args.path())
     else:
-        if options.ignore_case:
-            options.regex = '(?i)' + options.regex
-        find(options.path, options.aall, options.regex)
+        if args.ignore_case:
+            args.regex = '(?i)' + args.regex
+        find(args.path, args.aall, args.regex)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -92,6 +92,6 @@ if __name__ == '__main__':
         nargs='?',
         default=None)
 
-    options = parser.parse_args()
+    args = parser.parse_args()
 
-    sys.exit(main(options))
+    sys.exit(main(args))

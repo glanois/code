@@ -55,12 +55,12 @@ class TestDiff(unittest.TestCase):
         with warnings.catch_warnings():
             warnings.simplefilter('ignore', ResourceWarning)
             parser = ppt.diff.get_parser()
-            options = parser.parse_args([ os.path.join(DATA_DIR, 'foo.txt'), os.path.join(DATA_DIR, 'bar.txt') ])
+            args = parser.parse_args([ os.path.join(DATA_DIR, 'foo.txt'), os.path.join(DATA_DIR, 'bar.txt') ])
 
             # Capture stdout when running.
             out = io.StringIO()
             with redirect_stdout(out):
-                ppt.diff.main(options)
+                ppt.diff.main(args)
                 
             # Compare the results.
             captured_stdout = out.getvalue()
@@ -78,12 +78,12 @@ class TestDiff(unittest.TestCase):
         with warnings.catch_warnings():
             warnings.simplefilter('ignore', ResourceWarning)
             parser = ppt.diff.get_parser()
-            options = parser.parse_args([ os.path.join(DATA_DIR, 'file1.txt'), os.path.join(DATA_DIR, 'file2.txt') ])
+            args = parser.parse_args([ os.path.join(DATA_DIR, 'file1.txt'), os.path.join(DATA_DIR, 'file2.txt') ])
 
             # Capture stdout when running.
             out = io.StringIO()
             with redirect_stdout(out):
-                ppt.diff.main(options)
+                ppt.diff.main(args)
                 
             # Compare the results.
             captured_stdout = out.getvalue()
@@ -107,12 +107,12 @@ class TestDiff(unittest.TestCase):
             make_example_dir(os.path.join(DATA_DIR, 'example/dir2/common_dir'))
 
             parser = ppt.diff.get_parser()
-            options = parser.parse_args([ '-r', os.path.join(DATA_DIR, 'example/dir1'), os.path.join(DATA_DIR, 'example/dir2') ])
+            args = parser.parse_args([ '-r', os.path.join(DATA_DIR, 'example/dir1'), os.path.join(DATA_DIR, 'example/dir2') ])
 
             # Capture stdout when running.
             out = io.StringIO()
             with redirect_stdout(out):
-                ppt.diff.main(options)
+                ppt.diff.main(args)
                 
             # Compare the results.
             captured_stdout = out.getvalue()

@@ -1,4 +1,4 @@
-"""
+r"""
 usage: ascii.py [-h] [-l]
 
 Prints an ASCII table similar to "man ascii"
@@ -100,8 +100,8 @@ short_text = r"""
        F: / ? O _ o DEL"""
 
 
-def main(options):
-    if options.long:
+def main(args):
+    if args.long:
         print(long_text)
     else:
         print(short_text)
@@ -123,5 +123,5 @@ def get_parser():
 
 if __name__ == '__main__':
     parser = get_parser()
-    options = parser.parse_args()
-    sys.exit(main(options))
+    args = parser.parse_args()
+    sys.exit(main(args))

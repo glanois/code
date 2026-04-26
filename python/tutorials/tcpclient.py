@@ -12,7 +12,7 @@ import lib.network
 def timer_callback(event):
     event.set()
         
-def main(options):
+def main(args):
     logging.basicConfig(
         level=logging.DEBUG,
         format='%(asctime)s %(name)s %(levelname)s - %(message)s',
@@ -20,8 +20,8 @@ def main(options):
     logger = logging.getLogger('main()')
 
     t = lib.network.TcpClient()
-    t.connect(options.address[0], int(options.port[0]))
-    logger.info('connected to %s:%d' % (options.address[0], int(options.port[0])))
+    t.connect(args.address[0], int(args.port[0]))
+    logger.info('connected to %s:%d' % (args.address[0], int(args.port[0])))
 
     while True:
         t.sendall('ping'.encode('utf-8'))
@@ -58,6 +58,6 @@ if __name__ == '__main__':
         help='Port number of the server.',
         nargs=1)
 
-    options = parser.parse_args()
-    sys.exit(main(options))
+    args = parser.parse_args()
+    sys.exit(main(args))
 
