@@ -51,7 +51,7 @@ def find(path, aall, regex):
                     
 def main(args):
     if not os.path.isdir(args.path):
-        print('ERROR: %s is not a directory' % args.path())
+        print('ERROR: {} is not a directory'.format(args.path))
     else:
         if args.ignore_case:
             args.regex = '(?i)' + args.regex
