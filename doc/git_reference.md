@@ -31,15 +31,17 @@ git config --global user.name "Your Name"
 
 # SHORTCUTS
 
-| Alias  | Description                                            | Command                                                      |
-| :----- | ------------------------------------------------------ | ------------------------------------------------------------ |
-| `gbsc` | What branch am I currently on?                         | `> git branch --show-current`                                |
-| `gbva` | Verbosely list all local and remote-tracking branches. | `> git branch -v -a`                                         |
-| `gllb` | Concisely list local branches.                         | `> git for-each-ref --format="%(refname:short)" refs/heads`  |
-| `glrb` | List all remote active branches (Windows).             | <code>> git ls-remote --heads origin \| perl -ne "print \"$1\n\" if m\|refs/heads(.*)$\|"</code><br />You'll be warned if you have unmerged local changes; use `-D` instead.<br />You'll be warned if the branch is not fully merged; use `-D` instead. |
-| `glrb` | List all remote active branches (Linux).               | <code>> git ls-remote --heads origin \|perl -ne 'print "$1\n" if m\|refs/heads(.*)$\|'</code> |
-| `gbd`  | Delete a local branch.                                 | <code>> git branch --delete *branchname*</code>              |
-| `gbdr` | Delete remote-tracking branch.                         | <code>> git branch -d -r origin/*branchname*</code>          |
+| Alias   | Description                                                  | Command                                                      |
+| :------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| `gbsc`  | What branch am I currently on?                               | `> git branch --show-current`                                |
+| `gbva`  | Verbosely list all local and remote-tracking branches.       | `> git branch -v -a`                                         |
+| `gllb`  | Concisely list local branches.                               | `> git for-each-ref --format="%(refname:short)" refs/heads`  |
+| `glrb`  | List all remote active branches (Windows).                   | <code>> git ls-remote --heads origin \| perl -ne "print \"$1\n\" if m\|refs/heads(.*)$\|"</code><br />You'll be warned if you have unmerged local changes; use `-D` instead.<br />You'll be warned if the branch is not fully merged; use `-D` instead. |
+| `glrb`  | List all remote active branches (Linux).                     | <code>> git ls-remote --heads origin \|perl -ne 'print "$1\n" if m\|refs/heads(.*)$\|'</code> |
+| `gbd`   | Delete a local branch.                                       | <code>> git branch --delete *branchname*</code>              |
+| `gbdr`  | Delete remote-tracking branch.                               | <code>> git branch -d -r origin/*branchname*</code>          |
+| `glog`  | Concise Git log format.                                      | <code>> git log —decorate —oneline —graph</code>             |
+| `gdiff` | Invoke Git diff tool.  (See [Use a specific diff tool](#Use a specific diff tool)) | <code>> git difftool --extcmd=diff --no-prompt</code>        |
 
 ## .bashrc
 
