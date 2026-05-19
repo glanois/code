@@ -113,6 +113,7 @@ class TestTree(unittest.TestCase):
 """
             self.assertEqual(captured_stdout, expected_result)
 
+    @unittest.skip('Skipping - unsorted order is indeterminate across operating systems.')
     def test_full_tree_unsorted(self):
         """ Test full tree with -U unsorted option. """
         with warnings.catch_warnings():
