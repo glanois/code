@@ -52,6 +52,8 @@ alias gllb='git for-each-ref --format="%(refname:short)" refs/heads'
 alias glrb='git ls-remote --heads origin |perl -ne '\''print "$1\n" if m|refs/heads(.*)$|'\'''
 alias gbd="git branch --delete"
 alias gbdr="git branch -d -r"
+alias glog="git log —decorate —oneline —graph"
+alias gdiff="git difftool --extcmd=diff --no-prompt"
 ```
 
 # REPOSITORY
