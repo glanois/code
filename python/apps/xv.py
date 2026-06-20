@@ -1,7 +1,8 @@
 r""" 
 usage: xv.py [-h] filename
 
-A simple image viewer and a tribute to the original xv image display editing program for the X Window System.
+DESCRIPTION
+    A simple image viewer and a tribute to the original xv image display editing program for the X Window System.
 
 positional arguments:
   filename    Image file to display.
@@ -9,6 +10,21 @@ positional arguments:
 options:
   -h, --help  show this help message and exit
 
+REQUIREMENTS
+    One-time system setup:
+        sudo apt update
+        sudo apt install python3-tk python3-pil python3-pil.imagetk
+
+    To use this application in a venv, you'll have to bring in
+    these system packages when you create the venv:
+        python3 -m venv --system-site-packages venv_name
+        source venv_name/bin/activate
+        pip install -r requirements.txt   # any other deps
+
+NOTES
+    http://www.trilon.com/xv/ (gives 404 as of 6/20/2026)
+    https://itsfoss.community/t/resurrecting-xv-the-original-linux-image-viewer/12426
+    https://github.com/nevillejackson/Unix/tree/main/xv
 """
 
 import argparse
