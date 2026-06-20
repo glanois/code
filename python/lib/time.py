@@ -23,5 +23,11 @@ def date_from_year_doy(year, doy):
 
 def to_military_time(x):
     """ Converts hours/minutes am/pm to military time. """
+
+    # Normalize whitespace: strip leading/trailing and collapse multiple spaces.
+    # Need to do this because of differences in behavior of strftime()
+    # in Python < 3.2 and >= 3.12.
+    x = ' '.join(x.strip().split())
+
     return datetime.datetime.strptime(x, "%I:%M %p").strftime("%H:%M")
 

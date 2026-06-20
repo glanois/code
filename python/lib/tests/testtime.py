@@ -74,8 +74,13 @@ class TestToMilitaryTime(unittest.TestCase):
         self.assertEqual(lib.time.to_military_time('2:00 am'), '02:00')
 
         # Leading space(s).
-        with self.assertRaises(ValueError):
-            self.assertEqual(lib.time.to_military_time(' 3:00 am'), '03:00')
+        self.assertEqual(lib.time.to_military_time(' 3:00 am'), '03:00')
+
+        # Trailing space(s).
+        self.assertEqual(lib.time.to_military_time('3:00 am '), '03:00')
+
+        # Both leading and trailing space(s).
+        self.assertEqual(lib.time.to_military_time(' 3:00 am '), '03:00')
 
         # More than one space separating HH:MM and am/pm.
         self.assertEqual(lib.time.to_military_time('4:00  pm'), '16:00')
