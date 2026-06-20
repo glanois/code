@@ -1,20 +1,21 @@
-""" pclock.py - Python clock
+r"""
+usage: pclock.py [-h]
 
-Synopsis:
-    pclock.py
+DESCRIPTION
+    A Python graphical clock.
 
-Description:
-    A simple clock.
+options:
+  -h, --help  show this help message and exit
 
-Notes:
-
-https://www.daniweb.com/programming/software-development/code/216785/tkinter-digital-clock-python
-https://www.daniweb.com/programming/software-development/threads/70076/disabling-the-title-bar
-https://stackoverflow.com/questions/29641616/drag-window-when-using-overrideredirect
-https://stackoverflow.com/questions/39529600/remove-titlebar-without-overrideredirect-using-tkinter
-https://stackoverflow.com/questions/28467285/how-do-i-bind-the-escape-key-to-close-this-window
+NOTES
+    https://www.daniweb.com/programming/software-development/code/216785/tkinter-digital-clock-python
+    https://www.daniweb.com/programming/software-development/threads/70076/disabling-the-title-bar
+    https://stackoverflow.com/questions/29641616/drag-window-when-using-overrideredirect
+    https://stackoverflow.com/questions/39529600/remove-titlebar-without-overrideredirect-using-tkinter
+    https://stackoverflow.com/questions/28467285/how-do-i-bind-the-escape-key-to-close-this-window
 """
 
+import argparse
 import tkinter
 import tkinter.font
 import sys
@@ -46,6 +47,7 @@ class FloatingBorderlessWindow(tkinter.Tk):
         self._offsety = 0
         self.bind('<Button-1>',  self.button1)
         self.bind('<B1-Motion>', self.b1motion)
+        self.bind('<q>',    self.escape)
         self.bind('<Escape>',    self.escape)
 
     def button1(self, event):
@@ -59,7 +61,7 @@ class FloatingBorderlessWindow(tkinter.Tk):
 
     def escape(self, event):
         self.withdraw()
-        sys.exit()
+        sys.exit(0)
 
 
 class Clock(FloatingBorderlessWindow):
@@ -95,10 +97,23 @@ class Clock(FloatingBorderlessWindow):
         self._clock.after(1000, self.tick)
 
 
-def main():
+def main(args):
     clock = Clock()
     clock.mainloop()
+    return 0
 
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser(
+        description="""DESCRIPTION
+    A Python graphical clock.""",
+        epilog="""NOTES
+    https://www.daniweb.com/programming/software-development/code/216785/tkinter-digital-clock-python
+    https://www.daniweb.com/programming/software-development/threads/70076/disabling-the-title-bar
+    https://stackoverflow.com/questions/29641616/drag-window-when-using-overrideredirect
+    https://stackoverflow.com/questions/39529600/remove-titlebar-without-overrideredirect-using-tkinter
+    https://stackoverflow.com/questions/28467285/how-do-i-bind-the-escape-key-to-close-this-window""",
+    formatter_class=argparse.RawDescriptionHelpFormatter)
+
+    args = parser.parse_args()
+    sys.exit(main(args))
