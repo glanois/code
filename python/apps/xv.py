@@ -9,11 +9,6 @@ positional arguments:
 options:
   -h, --help  show this help message and exit
 
-NOTES:
-    sudo apt-get install python3-pip
-    sudo pip3 install pillow
-    sudo apt-get install python3-pil.imagetk
-    http://www.trilon.com/xv/
 """
 
 import argparse
@@ -50,7 +45,17 @@ class ImageDisplay(Window):
 
             scaled_width  = int((scale * float(width)))
             scaled_height = int((scale * float(height)))
-            image = image.resize((scaled_width, scaled_height), PIL.Image.ANTIALIAS)
+
+            # Used to use PIL.Image.ANTIALIAS.  But that was dropped in
+            # Pillow 10.0.0.  It was an alias to LANCZOS anyway.
+            try:
+                RESAMPLE_LANCZOS = PIL.Image.Resampling.LANCZOS
+            except AttributeError:
+                # Pillow < 9.1 or so
+                RESAMPLE_LANCZOS = PIL.Image.LANCZOS
+                # or PIL.Image.ANTIALIAS if you really need to support ancient versions
+
+            image = image.resize((scaled_width, scaled_height), RESAMPLE_LANCZOS)
 
             # Keep a reference to the PhotoImage instance.
             # (Otherwise the label's image would disappear
@@ -68,7 +73,26 @@ def main(args):
     return 0
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='A simple image viewer and a tribute to the original xv image display editing program for the X Window System.')
+    parser = argparse.ArgumentParser(
+        description="""DESCRIPTION
+    A simple image viewer and a tribute to the original xv image display editing program for the X Window System.""",
+        epilog="""REQUIREMENTS
+    One-time system setup:
+        sudo apt update
+        sudo apt install python3-tk python3-pil python3-pil.imagetk
+
+    To use this application in a venv, you'll have to bring in
+    these system packages when you create the venv:
+        python3 -m venv --system-site-packages venv_name
+        source venv_name/bin/activate
+        pip install -r requirements.txt   # any other deps
+
+NOTES
+    http://www.trilon.com/xv/ (gives 404 as of 6/20/2026)
+    https://itsfoss.community/t/resurrecting-xv-the-original-linux-image-viewer/12426
+    https://github.com/nevillejackson/Unix/tree/main/xv""",
+    formatter_class=argparse.RawDescriptionHelpFormatter)
+
     parser.add_argument(
         'filename',
         help='Image file to display.')
