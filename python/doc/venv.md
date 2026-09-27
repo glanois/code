@@ -1,5 +1,13 @@
 # Python Virtual Environment
 
+# PREREQUISITES
+
+Python on Ubuntu Linux does not provide `venv`.  You'll have to install it yourself first:
+
+```bash
+sudo apt install python3.14-venv
+```
+
 # BASIC
 
 This is the basic workflow for using a virtual environment:
